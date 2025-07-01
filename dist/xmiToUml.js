@@ -266,13 +266,27 @@ function associationConverter(associationAst, IDs) {
         attributes: [],
         isDerived: false,
         addOnly: false,
-        ownedEnd: [undefined, undefined]
+        ownedEnd: [undefined, undefined],
+        navigableOwnedEnd: []
     };
     if ('ownedEnd' in associationAst) {
         associationAst.ownedEnd.forEach((element, i) => {
             const elem = propretyConverter(element, IDs, convertedAssociation);
             convertedAssociation.ownedEnd[i] = elem;
         });
+    }
+    if ('@_navigableOwnedEnd' in associationAst) {
+        let mot = "";
+        for (const char of associationAst['@_navigableOwnedEnd']) {
+            if (char != ' ') {
+                mot += char;
+            }
+            else {
+                convertedAssociation.navigableOwnedEnd.push(mot);
+                mot = "";
+            }
+        }
+        convertedAssociation.navigableOwnedEnd.push(mot);
     }
     return convertedAssociation;
 }

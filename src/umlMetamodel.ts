@@ -102,6 +102,7 @@ export interface Association extends Classifier, Relationship{
     $type: "Association" | "AssociationClass"
     isDerived: boolean
     addOnly: boolean
+    navigableOwnedEnd: Array<string>
     ownedEnd: [TypedElement, TypedElement]
 }
 

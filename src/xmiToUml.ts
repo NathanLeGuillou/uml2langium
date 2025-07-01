@@ -294,7 +294,8 @@ function associationConverter(associationAst: Struct, IDs: IdMap): Association{
         attributes: [],
         isDerived: false,
         addOnly: false,
-        ownedEnd: [undefined, undefined]
+        ownedEnd: [undefined, undefined],
+        navigableOwnedEnd: []
     };
     if ('ownedEnd' in associationAst) {
         (associationAst.ownedEnd as Struct[]).forEach((element,i) => {
@@ -302,6 +303,20 @@ function associationConverter(associationAst: Struct, IDs: IdMap): Association{
             convertedAssociation.ownedEnd[i] = elem
         });
     }
+    if('@_navigableOwnedEnd' in associationAst) {
+        let mot = ""
+        for (const char of associationAst['@_navigableOwnedEnd'] as string){
+            if(char != ' '){
+                mot += char
+            }
+            else{
+                convertedAssociation.navigableOwnedEnd.push(mot)
+                mot = ""
+            }
+        }
+        convertedAssociation.navigableOwnedEnd.push(mot)
+    }
+
     return convertedAssociation
 }
 

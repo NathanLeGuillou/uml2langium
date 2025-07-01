@@ -199,7 +199,13 @@ export class U2LConverter {
                 result.push(convertedValue);
             }
             else if (isAssociation(value)) {
-                this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
+                if (value.navigableOwnedEnd.length == 2) {
+                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
+                    this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name);
+                }
+                else {
+                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
+                }
             }
         });
         for (const elem of result) {

@@ -1,10 +1,10 @@
-import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation } from './umlMetamodel.js'
+import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement } from './umlMetamodel.js'
 import {GrammarAST} from 'langium'
 
-
 export class U2LConverter{
-    private simpleTypeMap = new Map<string, GrammarAST.SimpleType>; 
     private refMapLink = new Map<string, string>;
+
+    private interfMap = new Map<string, GrammarAST.Interface>
 
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
@@ -53,6 +53,7 @@ export class U2LConverter{
         attributes.push(...interfaceOrClass.attributes
             .map((prop, index) => this.convertProperty(prop, result, index))
         )
+        this.interfMap.set(result.name, result)
         return result
     }
 
@@ -147,7 +148,6 @@ export class U2LConverter{
             $containerIndex: index,
             primitiveType: type.$type == "PrimitiveType" ? this.convertPrimitiveTypes(type as PrimitiveType) : undefined,
         }
-        this.simpleTypeMap.set(type.name, result)
         return result
 
     }
@@ -194,6 +194,13 @@ export class U2LConverter{
         return isEnumeration(type) || isClass(type) || isInterface(type)
     }
 
+
+
+    cardinaliy(ownedEnd: MultiplicityElement): [number, number]{
+        return [ownedEnd.lower, ownedEnd.upper]
+    }
+
+
     /** 
      * Convertit un modèle UML (liste d'éléments) en un objet Grammar Langium.
      * 
@@ -221,22 +228,23 @@ export class U2LConverter{
                 result.push(convertedValue)
             }
             else if(isAssociation(value)){
-                if( value.navigableOwnedEnd.length == 2){
+                if(value.navigableOwnedEnd.length == 2){
                     this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name)
-                    this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name) 
+                    this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name)
+                }
+                else if (value.navigableOwnedEnd.length == 1){
+                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name)
                 }
                 else{
-                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name)
+                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navifableOwnedEnd on a transition`)
                 }
+                
             }
         })
         for(const elem of result){
-            const target: string | undefined = this.refMapLink[elem.name]
+            const target = this.refMapLink[elem.name]
             if(target){
-                this.simpleTypeMap[target].typeRef = {
-                    $refText: elem.name,
-                    ref: elem
-                }
+                elem.attributes.push(this.interfMap[target])
             }
         }
         return grammar

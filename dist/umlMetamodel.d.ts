@@ -81,7 +81,7 @@ export interface Association extends Classifier, Relationship {
     isDerived: boolean;
     addOnly: boolean;
     navigableOwnedEnd: Array<string>;
-    ownedEnd: [TypedElement, TypedElement];
+    ownedEnd: [Property, Property];
 }
 export interface AssociationClass extends Class, Association {
     $type: "AssociationClass";

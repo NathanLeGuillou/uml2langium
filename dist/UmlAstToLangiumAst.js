@@ -1,7 +1,7 @@
 import { AggregationKind, isClass, isDataType, isInterface, isEnumeration, isAssociation } from './umlMetamodel.js';
 export class U2LConverter {
-    simpleTypeMap = new Map;
     refMapLink = new Map;
+    interfMap = new Map;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *
@@ -46,6 +46,7 @@ export class U2LConverter {
         };
         attributes.push(...interfaceOrClass.attributes
             .map((prop, index) => this.convertProperty(prop, result, index)));
+        this.interfMap.set(result.name, result);
         return result;
     }
     /**
@@ -133,7 +134,6 @@ export class U2LConverter {
             $containerIndex: index,
             primitiveType: type.$type == "PrimitiveType" ? this.convertPrimitiveTypes(type) : undefined,
         };
-        this.simpleTypeMap.set(type.name, result);
         return result;
     }
     /**
@@ -174,6 +174,9 @@ export class U2LConverter {
     isReference(type) {
         return isEnumeration(type) || isClass(type) || isInterface(type);
     }
+    cardinaliy(ownedEnd) {
+        return [ownedEnd.lower, ownedEnd.upper];
+    }
     /**
      * Convertit un modèle UML (liste d'éléments) en un objet Grammar Langium.
      *
@@ -203,7 +206,7 @@ export class U2LConverter {
                     this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
                     this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name);
                 }
-                else {
+                else if (value.navigableOwnedEnd.length == 2) {
                     this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
                 }
             }
@@ -211,10 +214,7 @@ export class U2LConverter {
         for (const elem of result) {
             const target = this.refMapLink[elem.name];
             if (target) {
-                this.simpleTypeMap[target].typeRef = {
-                    $refText: elem.name,
-                    ref: elem
-                };
+                elem.attributes.push(this.interfMap[target]);
             }
         }
         return grammar;

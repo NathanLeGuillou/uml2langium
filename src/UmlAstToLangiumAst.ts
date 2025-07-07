@@ -242,7 +242,7 @@ export class U2LConverter{
         })
         for(const [prop1, prop2] of this.propretiesArray){
             const interfName = prop1.type.name
-            this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length))
+            this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)) // push la property convertie en objet langium
             
         }
         return grammar

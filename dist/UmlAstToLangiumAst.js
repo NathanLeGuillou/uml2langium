@@ -1,8 +1,7 @@
 import { AggregationKind, isClass, isDataType, isInterface, isEnumeration, isAssociation } from './umlMetamodel.js';
 export class U2LConverter {
-    refMapLink = new Map;
     interfMap = new Map;
-    typeAttrMap = new Map;
+    propretiesArray = new Array;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *
@@ -175,8 +174,9 @@ export class U2LConverter {
     isReference(type) {
         return isEnumeration(type) || isClass(type) || isInterface(type);
     }
-    cardinaliy(ownedEnd) {
-        return [ownedEnd.lower, ownedEnd.upper];
+    property2Attribute(prop, parent) {
+        const langProp = this.convertProperty(prop, parent, parent.attributes.length);
+        parent.attributes.push(langProp);
     }
     /**
      * Convertit un modèle UML (liste d'éléments) en un objet Grammar Langium.
@@ -204,30 +204,20 @@ export class U2LConverter {
             }
             else if (isAssociation(value)) {
                 if (value.navigableOwnedEnd.length == 2) {
-                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
-                    this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name);
+                    this.propretiesArray.push([value.ownedEnd[0], value.ownedEnd[1]]);
+                    this.propretiesArray.push([value.ownedEnd[1], value.ownedEnd[0]]);
                 }
                 else if (value.navigableOwnedEnd.length == 1) {
-                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
+                    this.propretiesArray.push([value.ownedEnd[0], value.ownedEnd[1]]);
                 }
                 else {
-                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navifableOwnedEnd on a transition`);
+                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navigableOwnedEnd on an association.`);
                 }
             }
         });
-        for (const elem of result) {
-            const target = this.refMapLink.get(elem.name);
-            if (target) {
-                const oldAttr = this.interfMap.get(target);
-                const newAttr = {
-                    $container: elem,
-                    $type: 'TypeAttribute',
-                    isOptional: false,
-                    name: oldAttr.name,
-                    type: 0, //! je ne comprends pas quoi mettre là
-                };
-                elem.attributes.push(newAttr);
-            }
+        for (const [prop1, prop2] of this.propretiesArray) {
+            const interfName = prop1.type.name;
+            this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)); // push la property convertie en objet langium
         }
         return grammar;
     }

@@ -196,8 +196,9 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
         visibility: visibility(propretyAst['@_visibility']),
         isOrdered: false,
         isUnique: false,
-        lower: 0,
-        upper: 1,
+        lower: propretyAst['lowerValue'] ? propretyAst['lowerValue']['@_value'] : 1,
+        // pour upper, si il n'y a pas de limite le max es 2 car dans tous les cas on ne differencie pas les cardinalitées multiples entre elles
+        upper: propretyAst['upperValue'] ? propretyAst['lowerValue']['@_value'] == "*" ? 2 : propretyAst['lowerValue']['@_value'] : 1,
         $type: "Property",
         agggregation: AggregationKind.none,
         isDerived: false,
@@ -205,6 +206,8 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
         association: association,
         type: typeConverter(IDs.get(propretyAst["@_type"]), IDs)
     };
+    const tempTest1 = propretyAst['upperValue'] ? propretyAst['lowerValue']['@_value'] : undefined;
+    const tempTest2 = propretyAst['upperValue'];
     return convertedProperty;
 }
 /**

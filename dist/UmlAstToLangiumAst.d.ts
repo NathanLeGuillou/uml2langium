@@ -1,9 +1,8 @@
-import { Interface, Class, NamedElement, Property, AggregationKind, Type, PrimitiveType, MultiplicityElement } from './umlMetamodel.js';
+import { Interface, Class, NamedElement, Property, AggregationKind, Type, PrimitiveType } from './umlMetamodel.js';
 import { GrammarAST } from 'langium';
 export declare class U2LConverter {
-    private refMapLink;
     private interfMap;
-    private typeAttrMap;
+    private propretiesArray;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *
@@ -86,7 +85,7 @@ export declare class U2LConverter {
      */
     convert2ArrayType(type: Type, container: GrammarAST.ArrayType | GrammarAST.ReferenceType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isOptional: boolean, aggregationKind: AggregationKind, index?: number): GrammarAST.ArrayType;
     isReference(type: Type): boolean;
-    cardinaliy(ownedEnd: MultiplicityElement): [number, number];
+    property2Attribute(prop: Property, parent: GrammarAST.Interface): void;
     /**
      * Convertit un modèle UML (liste d'éléments) en un objet Grammar Langium.
      *

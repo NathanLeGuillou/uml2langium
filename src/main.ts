@@ -8,4 +8,4 @@ const uml2lang = new U2LConverter()
 
 const langObj = uml2lang.convertModel(umlObj)
 
-console.log(langObj)
+console.log(langObj['interfaces'][0]['attributes'][0])

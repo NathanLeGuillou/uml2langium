@@ -3,6 +3,7 @@ import { GrammarAST } from 'langium';
 export declare class U2LConverter {
     private refMapLink;
     private interfMap;
+    private typeAttrMap;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *

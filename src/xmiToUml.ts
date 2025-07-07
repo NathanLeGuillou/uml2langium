@@ -295,7 +295,8 @@ function associationConverter(associationAst: Struct, IDs: IdMap): Association{
         isDerived: false,
         addOnly: false,
         ownedEnd: [undefined, undefined],
-        navigableOwnedEnd: []
+        navigableOwnedEnd: [],
+        targets: [associationAst[0] as Type, associationAst[0] as Type] //! faux, à changer
     };
     if ('ownedEnd' in associationAst) {
         (associationAst.ownedEnd as Struct[]).forEach((element,i) => {

@@ -104,6 +104,7 @@ export interface Association extends Classifier, Relationship{
     addOnly: boolean
     navigableOwnedEnd: Array<string>
     ownedEnd: [Property, Property]
+    targets: [Type, Type]
 }
 
 export interface AssociationClass extends Class, Association {

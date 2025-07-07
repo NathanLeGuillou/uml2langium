@@ -1,10 +1,11 @@
 import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement } from './umlMetamodel.js'
 import {GrammarAST} from 'langium'
+import { propretyConverter } from './xmiToUml.js';
 
 export class U2LConverter{
-    private refMapLink = new Map<string, string>;
 
     private interfMap = new Map<string, GrammarAST.Interface>
+    private propretiesArray = new Array<[Property, Property]>
 
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
@@ -128,7 +129,6 @@ export class U2LConverter{
             $container: container,
             $containerIndex: index,
             superTypes: []
-
         }
     }
 
@@ -195,9 +195,9 @@ export class U2LConverter{
     }
 
 
-
-    cardinaliy(ownedEnd: MultiplicityElement): [number, number]{
-        return [ownedEnd.lower, ownedEnd.upper]
+    property2Attribute(prop: Property, parent: GrammarAST.Interface): void{
+        const langProp = this.convertProperty(prop, parent, parent.attributes.length)
+        parent.attributes.push(langProp)
     }
 
 
@@ -229,23 +229,21 @@ export class U2LConverter{
             }
             else if(isAssociation(value)){
                 if(value.navigableOwnedEnd.length == 2){
-                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name)
-                    this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name)
+                    this.propretiesArray.push([value.ownedEnd[0], value.ownedEnd[1]])
+                    this.propretiesArray.push([value.ownedEnd[1], value.ownedEnd[0]])
                 }
-                else if (value.navigableOwnedEnd.length == 1){
-                    this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name)
+                else if(value.navigableOwnedEnd.length == 1){
+                    this.propretiesArray.push([value.ownedEnd[0], value.ownedEnd[1]])
                 }
                 else{
-                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navifableOwnedEnd on a transition`)
+                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navigableOwnedEnd on an association.`)
                 }
-                
             }
         })
-        for(const elem of result){
-            const target = this.refMapLink[elem.name]
-            if(target){
-                elem.attributes.push(this.interfMap[target])
-            }
+        for(const [prop1, prop2] of this.propretiesArray){
+            const interfName = prop1.type.name
+            this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length))
+            
         }
         return grammar
     }

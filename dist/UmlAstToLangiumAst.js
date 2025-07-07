@@ -2,6 +2,7 @@ import { AggregationKind, isClass, isDataType, isInterface, isEnumeration, isAss
 export class U2LConverter {
     refMapLink = new Map;
     interfMap = new Map;
+    typeAttrMap = new Map;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *
@@ -206,15 +207,26 @@ export class U2LConverter {
                     this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
                     this.refMapLink.set(value.ownedEnd[1].type.name, value.ownedEnd[0].type.name);
                 }
-                else if (value.navigableOwnedEnd.length == 2) {
+                else if (value.navigableOwnedEnd.length == 1) {
                     this.refMapLink.set(value.ownedEnd[0].type.name, value.ownedEnd[1].type.name);
+                }
+                else {
+                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navifableOwnedEnd on a transition`);
                 }
             }
         });
         for (const elem of result) {
-            const target = this.refMapLink[elem.name];
+            const target = this.refMapLink.get(elem.name);
             if (target) {
-                elem.attributes.push(this.interfMap[target]);
+                const oldAttr = this.interfMap.get(target);
+                const newAttr = {
+                    $container: elem,
+                    $type: 'TypeAttribute',
+                    isOptional: false,
+                    name: oldAttr.name,
+                    type: 0, //! je ne comprends pas quoi mettre là
+                };
+                elem.attributes.push(newAttr);
             }
         }
         return grammar;

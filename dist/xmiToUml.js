@@ -206,8 +206,6 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
         association: association,
         type: typeConverter(IDs.get(propretyAst["@_type"]), IDs)
     };
-    const tempTest1 = propretyAst['upperValue'] ? propretyAst['upperValue']['@_value'] : undefined;
-    const tempTest2 = propretyAst['upperValue'];
     return convertedProperty;
 }
 /**

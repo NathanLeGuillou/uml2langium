@@ -1,6 +1,5 @@
 import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement } from './umlMetamodel.js'
 import {GrammarAST} from 'langium'
-import { propretyConverter } from './xmiToUml.js';
 
 export class U2LConverter{
 
@@ -103,16 +102,20 @@ export class U2LConverter{
     }
 
     /**
-     * Convertit un type UML en AbstractType Langium (Interface ou Type).
-     * 
-     * @param type - Le type UML.
-     * @param container - Le conteneur Langium Action.
-     * @param isArray - Si le type est un tableau.
-     * @param isOptional - Si le type est optionnel.
-     * @param aggregationKind - Le type d’agrégation.
-     * @param index - Index dans le conteneur.
-     * @returns Un objet AbstractType Langium.
-     */
+    * Convertit un type UML en `AbstractType` Langium (`Interface` ou `Type`) vide.
+    *
+    * Ce type abstrait est utilisé pour représenter un type cible dans une action.
+    * Il est simplifié (sans attributs ni superTypes) et déduit dynamiquement.
+    *
+    * @param type - Le type UML à convertir.
+    * @param container - L’élément Langium parent (`Action`).
+    * @param isArray - Non utilisé ici.
+    * @param isOptional - Non utilisé ici.
+    * @param aggregationKind - Non utilisé ici.
+    * @param index - Position dans le conteneur.
+    * @returns Un objet `AbstractType` Langium (`Interface` ou `Type`).
+    */
+
     convert2AbstractType(type: Type, container: GrammarAST.Action,isArray: boolean, isOptional: boolean, aggregationKind: AggregationKind,
          index?: number): GrammarAST.AbstractType{
         let temptype: any = ''
@@ -133,14 +136,17 @@ export class U2LConverter{
     }
 
     /**
-     * Convertit un type UML en SimpleType Langium.
-     * 
-     * @param type - Le type UML.
-     * @param container - Le conteneur Langium.
-     * @param isOptional - Si le type est optionnel.
-     * @param index - Index dans le conteneur.
-     * @returns Un objet SimpleType Langium.
-     */
+    * Convertit un type UML en `SimpleType` Langium, principalement utilisé pour les types primitifs.
+    *
+    * Si le type est un `PrimitiveType`, il est converti en type primitif Langium.
+    * Sinon, le champ `primitiveType` sera `undefined`.
+    *
+    * @param type - Le type UML à convertir.
+    * @param container - L’élément Langium parent.
+    * @param isOptional - Indique si le type est optionnel (non utilisé actuellement).
+    * @param index - Position dans le conteneur.
+    * @returns Un objet `SimpleType` Langium.
+    */
     convert2SimpleType(type: Type, container: GrammarAST.ReferenceType | GrammarAST.ArrayType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isOptional: boolean, index?: number, ref?: string): GrammarAST.SimpleType { //TODO mettre a jour la doc
         const result: GrammarAST.SimpleType = {
             $type: 'SimpleType',
@@ -201,12 +207,16 @@ export class U2LConverter{
     }
 
 
-    /** 
-     * Convertit un modèle UML (liste d'éléments) en un objet Grammar Langium.
-     * 
-     * @param elems - La liste des éléments UML à convertir.
-     * @returns Un objet `GrammarAST.Grammar` contenant les interfaces et types convertis.
-     */
+    /**
+    * Convertit un ensemble d’éléments UML (`NamedElement[]`) en un objet `Grammar` Langium.
+    *
+    * Les `Class` et `Interface` UML sont converties en interfaces Langium.
+    * Les `Association` UML sont analysées pour générer des propriétés navigables entre types.
+    *
+    * @param elems - Liste des éléments UML (classes, interfaces, associations).
+    * @returns Un objet `Grammar` contenant les interfaces Langium correspondantes.
+    * @throws Erreur si une association UML possède un nombre de `navigableOwnedEnd` non supporté.
+    */
     convertModel(elems: NamedElement[]): GrammarAST.Grammar{ //TODO mettre a jour la doc 
 
         const result: Array<GrammarAST.Interface> = []

@@ -48,18 +48,10 @@ export let jObjTest = transformXmlIntoJObj('./src/fsmModel.uml')
  * Construit une `IdMap` à partir d'une liste d'objets `Struct`, représentant l'arbre syntaxique
  * d’un modèle UML.
  * 
- * Cette map associe chaque identifiant (`@_xmi:id`) à une `Map<string, string>` contenant
- * des informations sur l'objet UML correspondant : son type, son nom et sa visibilité.
+ * Cette map associe chaque identifiant (`@_xmi:id`) à l’objet `Struct` correspondant.
  * 
- * Cette fonction utilise `fillIdMap` pour effectuer un parcours récursif sur tous les objets.
- * 
- * @param ast - Un tableau d’objets `Struct`, représentant le modèle UML brut.
- * @returns Une `Map` dont chaque clé est un identifiant d'objet, et la valeur une `Map`
- *          contenant les métadonnées suivantes :
- *          - `type` : le type UML de l'objet (ex. : `"uml:Class"`)
- *          - `name` : le nom de l'élément UML
- *          - `visibility` : sa visibilité (ex. : `"public"`, `"private"`)
-
+ * @param ast - Tableau d’objets `Struct`, représentant le modèle UML brut.
+ * @returns Une `Map` dont chaque clé est un identifiant d'objet, et la valeur un `Struct` représentant cet objet UML.
  */
 export function createIdMap(ast: Struct[]): IdMap{
     let idMap = new Map<string, Struct>();
@@ -68,19 +60,13 @@ export function createIdMap(ast: Struct[]): IdMap{
 }
 
 /**
- * Remplit une `IdMap` à partir d'une structure JSON (souvent issue d'un parsing XMI),
- * en associant à chaque identifiant d'élément UML (`@_xmi:id`) une map contenant : son
- *  type, son nom et sa visibilité.
- * 
- * Cette fonction est récursive : elle parcourt l'arbre JSON en profondeur pour s'assurer
- * qu'aucun identifiant ne soit ignoré, quelle que soit la structure imbriquée.
+ * Remplit récursivement une `IdMap` à partir d’une structure JSON (issue d’un parsing XMI).
  *
- * @param struct - L'objet JSON à parcourir. Il peut contenir des clés telles que `@_xmi:id`,
- *              `@_xmi:type`, `@_name`, `@_visibility`, ou encore des objets et tableaux enfants.
- * @param idMap - La map (`IdMap`) que l'on souhaite remplir. Pour chaque `@_xmi:id` trouvé,
- *                 une `Map<string, string>` contenant les métadonnées sera ajoutée.
+ * Cette fonction explore tous les nœuds (y compris imbriqués) à la recherche d’un champ `@_xmi:id`
+ * et les associe à leur `Struct` dans la map.
  *
- * @returns Rien (`void`) — la fonction modifie `idDict` en place.
+ * @param struct - Objet ou tableau JSON à parcourir.
+ * @param idMap - Map dans laquelle seront ajoutés les éléments identifiés.
  */
 function fillIdMap(struct:Struct | Struct[], idMap:IdMap): void{
     if (struct === null || typeof struct !== "object") {
@@ -163,17 +149,16 @@ export function dataTypeConverter(dataTypeAst: Struct): DataType{
 }
 
 /**
- * Convertit un objet `Struct` représentant un type UML en une instance partielle de `Type`.
+ * Convertit un nœud JSON représentant un type UML en une instance de `Type` du métamodèle interne.
  *
- * En fonction du champ `@_type`, la fonction lit les informations associées dans la map `IDs`
- * pour déterminer le type UML (ex: Class, Association, DataType...).
- * 
- * Si le type est reconnu comme `uml:DataType`, la fonction délègue la conversion à `dataTypeConverter`.
- * Dans les autres cas, elle retourne un objet `Type` partiel avec les champs minimaux remplis.
+ * La fonction détecte le type UML via `@_xmi:type` :
+ * - `"uml:Class"` → via `classConverter`
+ * - `"uml:Association"` → via `associationConverter`
+ * - `"uml:DataType"` → via `dataTypeConverter`
  *
- * @param typeAst - L'objet `Struct` représentant un type UML (avec un champ `@_type`).
- * @param IDs - Une map associant des IDs UML à leurs métadonnées (`type`, `name`, etc.).
- * @returns Une instance de `Type` ou `DataType`, selon le type UML rencontré.
+ * @param typeAst - Objet `Struct` représentant un type UML.
+ * @param IDs - Map d'identifiants (`IdMap`) pour résoudre les références.
+ * @returns Une instance concrète de `Type` (`Class`, `Association`, `DataType`, etc.).
  *
  * @throws Une erreur si le type UML n’est pas reconnu.
  */
@@ -194,19 +179,16 @@ export function typeConverter(typeAst: Struct, IDs: IdMap): Type{
 
 /**
  * Convertit un objet JSON représentant une propriété UML en une instance de `Property`.
- * 
- * Cette fonction extrait les informations pertinentes d’un nœud JSON  et les transforme
- * en un objet `Property` typé, avec les champs standards comme `name`, `visibility`, 
- * `lower`, `upper`, etc. Elle prend aussi en charge l'association si elle est spécifiée.
- * 
- * Le type de la propriété est résolu à l'aide de la fonction `typeConverter`.
- * 
- * @param propretyAst - L’objet JSON source représentant une propriété UML (avec des champs comme `@_name`, `@_visibility`, etc.).
- * @param IDs - La map d'identifiants (`IdMap`) associant chaque ID XMI à ses métadonnées utiles (type, nom, visibilité…).
- * @param association - (Optionnel) L’association UML à laquelle appartient la propriété, par défaut un objet vide casté.
- * 
- * @returns Une instance complète de `Property`, conforme au métamodèle UML défini dans `umlMetamodel.ts`.
+ *
+ * Résout le type de la propriété via `typeConverter`, et prend en compte les cardinalités
+ * (`lowerValue`, `upperValue`) et la visibilité.
+ *
+ * @param propretyAst - Objet JSON de type `Struct`, représentant une propriété UML.
+ * @param IDs - Map des éléments (`IdMap`) pour résoudre les types référencés.
+ * @param association - (Optionnel) Objet `Association` auquel rattacher cette propriété.
+ * @returns Une instance typée `Property`.
  */
+
 export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: Association = {} as Association): Property {
     const convertedProperty: Property = {
         owner: {} as Element,
@@ -274,11 +256,16 @@ export function classConverter(classAst: Struct, IDs: IdMap):Class{
 }
 
 /**
- * convertit une instance de type Association de jsonObj en un objet Association
- * @param associationAst 
- * @param IDs 
- * @returns 
+ * Convertit un objet JSON (`Struct`) représentant une association UML en une instance `Association`.
+ *
+ * La fonction extrait les extrémités (`ownedEnd`) et les convertit en propriétés UML.
+ * Elle traite également les extrémités navigables (`@_navigableOwnedEnd`) sous forme de string.
+ *
+ * @param associationAst - L'objet JSON décrivant l’association.
+ * @param IDs - La map `IdMap` des objets UML, utilisée pour la résolution des types.
+ * @returns Une instance `Association`.
  */
+
 function associationConverter(associationAst: Struct, IDs: IdMap): Association{
     const convertedAssociation: Association = {
         $type: "Association",

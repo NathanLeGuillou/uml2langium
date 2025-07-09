@@ -2,6 +2,7 @@ import { AggregationKind, isClass, isDataType, isInterface, isEnumeration, isAss
 export class U2LConverter {
     interfMap = new Map;
     propretiesArray = new Array;
+    refArray = new Array;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *
@@ -91,16 +92,19 @@ export class U2LConverter {
         }
     }
     /**
-     * Convertit un type UML en AbstractType Langium (Interface ou Type).
-     *
-     * @param type - Le type UML.
-     * @param container - Le conteneur Langium Action.
-     * @param isArray - Si le type est un tableau.
-     * @param isOptional - Si le type est optionnel.
-     * @param aggregationKind - Le type d’agrégation.
-     * @param index - Index dans le conteneur.
-     * @returns Un objet AbstractType Langium.
-     */
+    * Convertit un type UML en `AbstractType` Langium (`Interface` ou `Type`) vide.
+    *
+    * Ce type abstrait est utilisé pour représenter un type cible dans une action.
+    * Il est simplifié (sans attributs ni superTypes) et déduit dynamiquement.
+    *
+    * @param type - Le type UML à convertir.
+    * @param container - L’élément Langium parent (`Action`).
+    * @param isArray - Non utilisé ici.
+    * @param isOptional - Non utilisé ici.
+    * @param aggregationKind - Non utilisé ici.
+    * @param index - Position dans le conteneur.
+    * @returns Un objet `AbstractType` Langium (`Interface` ou `Type`).
+    */
     convert2AbstractType(type, container, isArray, isOptional, aggregationKind, index) {
         let temptype = '';
         if (type.$type == 'Class' || type.$type == 'Interface') {
@@ -119,21 +123,28 @@ export class U2LConverter {
         };
     }
     /**
-     * Convertit un type UML en SimpleType Langium.
-     *
-     * @param type - Le type UML.
-     * @param container - Le conteneur Langium.
-     * @param isOptional - Si le type est optionnel.
-     * @param index - Index dans le conteneur.
-     * @returns Un objet SimpleType Langium.
-     */
+    * Convertit un type UML en `SimpleType` Langium, principalement utilisé pour les types primitifs.
+    *
+    * Si le type est un `PrimitiveType`, il est converti en type primitif Langium.
+    * Sinon, le champ `primitiveType` sera `undefined`.
+    *
+    * @param type - Le type UML à convertir.
+    * @param container - L’élément Langium parent.
+    * @param isOptional - Indique si le type est optionnel (non utilisé actuellement).
+    * @param index - Position dans le conteneur.
+    * @returns Un objet `SimpleType` Langium.
+    */
     convert2SimpleType(type, container, isOptional, index, ref) {
         const result = {
             $type: 'SimpleType',
             $container: container,
             $containerIndex: index,
             primitiveType: type.$type == "PrimitiveType" ? this.convertPrimitiveTypes(type) : undefined,
+            typeRef: type.$type == "PrimitiveType" ? undefined : {
+                $refText: type.name
+            }
         };
+        this.refArray.push(result);
         return result;
     }
     /**
@@ -179,11 +190,15 @@ export class U2LConverter {
         parent.attributes.push(langProp);
     }
     /**
-     * Convertit un modèle UML (liste d'éléments) en un objet Grammar Langium.
-     *
-     * @param elems - La liste des éléments UML à convertir.
-     * @returns Un objet `GrammarAST.Grammar` contenant les interfaces et types convertis.
-     */
+    * Convertit un ensemble d’éléments UML (`NamedElement[]`) en un objet `Grammar` Langium.
+    *
+    * Les `Class` et `Interface` UML sont converties en interfaces Langium.
+    * Les `Association` UML sont analysées pour générer des propriétés navigables entre types.
+    *
+    * @param elems - Liste des éléments UML (classes, interfaces, associations).
+    * @returns Un objet `Grammar` contenant les interfaces Langium correspondantes.
+    * @throws Erreur si une association UML possède un nombre de `navigableOwnedEnd` non supporté.
+    */
     convertModel(elems) {
         const result = [];
         const grammar = {
@@ -219,6 +234,9 @@ export class U2LConverter {
             const interfName = prop1.type.name;
             this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)); // push la property convertie en objet langium
         }
+        this.refArray.forEach(simpleType => {
+            simpleType.typeRef.ref = this.interfMap.get(simpleType.typeRef.$refText);
+        });
         return grammar;
     }
 }

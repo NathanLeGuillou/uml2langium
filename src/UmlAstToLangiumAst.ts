@@ -1,10 +1,12 @@
 import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement } from './umlMetamodel.js'
-import {GrammarAST} from 'langium'
+import {DefaultReferences, GrammarAST} from 'langium'
 
 export class U2LConverter{
 
     private interfMap = new Map<string, GrammarAST.Interface>
     private propretiesArray = new Array<[Property, Property]>
+
+    private refArray = new Array<GrammarAST.SimpleType>
 
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
@@ -115,7 +117,6 @@ export class U2LConverter{
     * @param index - Position dans le conteneur.
     * @returns Un objet `AbstractType` Langium (`Interface` ou `Type`).
     */
-
     convert2AbstractType(type: Type, container: GrammarAST.Action,isArray: boolean, isOptional: boolean, aggregationKind: AggregationKind,
          index?: number): GrammarAST.AbstractType{
         let temptype: any = ''
@@ -148,12 +149,16 @@ export class U2LConverter{
     * @returns Un objet `SimpleType` Langium.
     */
     convert2SimpleType(type: Type, container: GrammarAST.ReferenceType | GrammarAST.ArrayType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isOptional: boolean, index?: number, ref?: string): GrammarAST.SimpleType { //TODO mettre a jour la doc
-        const result: GrammarAST.SimpleType = {
+        const result: GrammarAST.SimpleType = {//TODO mettre doc à jour pour parler des références
             $type: 'SimpleType',
             $container: container,
             $containerIndex: index,
             primitiveType: type.$type == "PrimitiveType" ? this.convertPrimitiveTypes(type as PrimitiveType) : undefined,
+            typeRef: type.$type == "PrimitiveType" ? undefined : {
+                $refText: type.name
+            }
         }
+        this.refArray.push(result)
         return result
 
     }
@@ -173,8 +178,8 @@ export class U2LConverter{
             $container: container,
             $type: 'ReferenceType',
             referenceType: this.convert2SimpleType(type, container, false),
-
         }
+
     }
 
     /**
@@ -217,8 +222,7 @@ export class U2LConverter{
     * @returns Un objet `Grammar` contenant les interfaces Langium correspondantes.
     * @throws Erreur si une association UML possède un nombre de `navigableOwnedEnd` non supporté.
     */
-    convertModel(elems: NamedElement[]): GrammarAST.Grammar{ //TODO mettre a jour la doc 
-
+    convertModel(elems: NamedElement[]): GrammarAST.Grammar{
         const result: Array<GrammarAST.Interface> = []
 
         const grammar: GrammarAST.Grammar = {
@@ -232,6 +236,7 @@ export class U2LConverter{
             interfaces: result,
             types: []
         }
+
         elems.forEach((value , index) =>{
             if(isClass(value) || isInterface(value)){
                 const convertedValue = this.convertClass(value, grammar, index)
@@ -255,6 +260,9 @@ export class U2LConverter{
             this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)) // push la property convertie en objet langium
             
         }
+        this.refArray.forEach(simpleType => {
+            (simpleType.typeRef as any).ref = this.interfMap.get(simpleType.typeRef.$refText)
+        })
         return grammar
     }
 }

@@ -1,1 +1,1 @@
-{"version":3,"file":"xmiMetamodel.types.js","sourceRoot":"","sources":["../src/xmiMetamodel.types.ts"],"names":[],"mappings":"AAAA,MAAM,OAAO,MAAM;IACf,IAAI,CAA8C;IAElD;QACI,IAAI,CAAC,IAAI,GAAG,IAAI,GAAG,EAAE,CAAA;IACzB,CAAC;CACJ"}
+{"version":3,"file":"xmiMetamodel.types.js","sourceRoot":"","sources":["../src/xmiMetamodel.types.ts"],"names":[],"mappings":"AAEA,MAAM,OAAO,MAAM;IACf,IAAI,CAA8C;IAElD;QACI,IAAI,CAAC,IAAI,GAAG,IAAI,GAAG,EAAE,CAAA;IACzB,CAAC;CACJ"}

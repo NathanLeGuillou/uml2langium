@@ -22,18 +22,10 @@ export declare let jObjTest: Struct[];
  * Construit une `IdMap` à partir d'une liste d'objets `Struct`, représentant l'arbre syntaxique
  * d’un modèle UML.
  *
- * Cette map associe chaque identifiant (`@_xmi:id`) à une `Map<string, string>` contenant
- * des informations sur l'objet UML correspondant : son type, son nom et sa visibilité.
+ * Cette map associe chaque identifiant (`@_xmi:id`) à l’objet `Struct` correspondant.
  *
- * Cette fonction utilise `fillIdMap` pour effectuer un parcours récursif sur tous les objets.
- *
- * @param ast - Un tableau d’objets `Struct`, représentant le modèle UML brut.
- * @returns Une `Map` dont chaque clé est un identifiant d'objet, et la valeur une `Map`
- *          contenant les métadonnées suivantes :
- *          - `type` : le type UML de l'objet (ex. : `"uml:Class"`)
- *          - `name` : le nom de l'élément UML
- *          - `visibility` : sa visibilité (ex. : `"public"`, `"private"`)
-
+ * @param ast - Tableau d’objets `Struct`, représentant le modèle UML brut.
+ * @returns Une `Map` dont chaque clé est un identifiant d'objet, et la valeur un `Struct` représentant cet objet UML.
  */
 export declare function createIdMap(ast: Struct[]): IdMap;
 /**
@@ -59,17 +51,16 @@ export declare function visibility(visib: string | undefined): VisibilityKind;
  */
 export declare function dataTypeConverter(dataTypeAst: Struct): DataType;
 /**
- * Convertit un objet `Struct` représentant un type UML en une instance partielle de `Type`.
+ * Convertit un nœud JSON représentant un type UML en une instance de `Type` du métamodèle interne.
  *
- * En fonction du champ `@_type`, la fonction lit les informations associées dans la map `IDs`
- * pour déterminer le type UML (ex: Class, Association, DataType...).
+ * La fonction détecte le type UML via `@_xmi:type` :
+ * - `"uml:Class"` → via `classConverter`
+ * - `"uml:Association"` → via `associationConverter`
+ * - `"uml:DataType"` → via `dataTypeConverter`
  *
- * Si le type est reconnu comme `uml:DataType`, la fonction délègue la conversion à `dataTypeConverter`.
- * Dans les autres cas, elle retourne un objet `Type` partiel avec les champs minimaux remplis.
- *
- * @param typeAst - L'objet `Struct` représentant un type UML (avec un champ `@_type`).
- * @param IDs - Une map associant des IDs UML à leurs métadonnées (`type`, `name`, etc.).
- * @returns Une instance de `Type` ou `DataType`, selon le type UML rencontré.
+ * @param typeAst - Objet `Struct` représentant un type UML.
+ * @param IDs - Map d'identifiants (`IdMap`) pour résoudre les références.
+ * @returns Une instance concrète de `Type` (`Class`, `Association`, `DataType`, etc.).
  *
  * @throws Une erreur si le type UML n’est pas reconnu.
  */
@@ -77,17 +68,13 @@ export declare function typeConverter(typeAst: Struct, IDs: IdMap): Type;
 /**
  * Convertit un objet JSON représentant une propriété UML en une instance de `Property`.
  *
- * Cette fonction extrait les informations pertinentes d’un nœud JSON  et les transforme
- * en un objet `Property` typé, avec les champs standards comme `name`, `visibility`,
- * `lower`, `upper`, etc. Elle prend aussi en charge l'association si elle est spécifiée.
+ * Résout le type de la propriété via `typeConverter`, et prend en compte les cardinalités
+ * (`lowerValue`, `upperValue`) et la visibilité.
  *
- * Le type de la propriété est résolu à l'aide de la fonction `typeConverter`.
- *
- * @param propretyAst - L’objet JSON source représentant une propriété UML (avec des champs comme `@_name`, `@_visibility`, etc.).
- * @param IDs - La map d'identifiants (`IdMap`) associant chaque ID XMI à ses métadonnées utiles (type, nom, visibilité…).
- * @param association - (Optionnel) L’association UML à laquelle appartient la propriété, par défaut un objet vide casté.
- *
- * @returns Une instance complète de `Property`, conforme au métamodèle UML défini dans `umlMetamodel.ts`.
+ * @param propretyAst - Objet JSON de type `Struct`, représentant une propriété UML.
+ * @param IDs - Map des éléments (`IdMap`) pour résoudre les types référencés.
+ * @param association - (Optionnel) Objet `Association` auquel rattacher cette propriété.
+ * @returns Une instance typée `Property`.
  */
 export declare function propretyConverter(propretyAst: Struct, IDs: IdMap, association?: Association): Property;
 /**

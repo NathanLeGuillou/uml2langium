@@ -17,6 +17,15 @@ describe('convertPrimitiveTypes', () => {
     it('convertit integer en bigint', () => {
         expect(converter.convertPrimitiveTypes({ name: 'integer', $type: 'PrimitiveType' } as any)).toBe('bigint')
     })
+    it('convertit float en number', () => {
+        expect(converter.convertPrimitiveTypes({ name: 'float', $type: 'PrimitiveType' } as any)).toBe('number')
+    })
+    it('convertit boolean en boolean', () => {
+        expect(converter.convertPrimitiveTypes({ name: 'boolean', $type: 'PrimitiveType' } as any)).toBe('boolean')
+    })
+    it('convertit date en Date', () => {
+        expect(converter.convertPrimitiveTypes({ name: 'date', $type: 'PrimitiveType' } as any)).toBe('Date')
+    })
     it('retourne undefined pour type inconnu', () => {
         expect(converter.convertPrimitiveTypes({ name: 'unknown', $type: 'PrimitiveType' } as any)).toBeUndefined()
     })
@@ -40,11 +49,98 @@ describe('convertClass', () => {
         expect(iface.name).toBe('State')
         expect(iface.attributes.length).toBeGreaterThan(0)
     })
+    it('ajoute la classe convertie à la map interne', () => {
+        const stateClass = umlModelConverted.find(e => e.name === 'State') as umlModel.Class
+        converter.convertClass(stateClass, { $type: 'Grammar' } as any, 0)
+        const entry = converter['interfMap'].get('State')
+        expect(entry).toBeDefined()
+    })
 })
 
 describe('convertModel', () => {
     it('convertit tout le modèle UML en AST Langium', () => {
         expect(langiumModel).toBeDefined()
         expect(langiumModel.interfaces.length).toBeGreaterThan(0)
+    })
+    it('génère des interfaces pour chaque classe UML', () => {
+        const umlClasses = umlModelConverted.filter(e => e.$type === 'Class')
+        for (const umlCls of umlClasses) {
+            const interf = langiumModel.interfaces.find(i => i.name === umlCls.name)
+            expect(interf).toBeDefined()
+        }
+    })
+    it('gère les associations bidirectionnelles avec 2 ends', () => {
+        const hasBidirectional = langiumModel.interfaces.some(i =>
+            i.attributes.some(a => a.type?.$type === 'ReferenceType')
+        )
+        expect(hasBidirectional).toBe(true)
+    })
+})
+
+describe('convert2SimpleType', () => {
+    it('retourne un SimpleType avec le bon primitiveType', () => {
+        const dummyAttr = { $type: 'TypeAttribute' } as any
+        const result = converter.convert2SimpleType({ name: 'string', $type: 'PrimitiveType' } as any, dummyAttr, false)
+        expect(result.$type).toBe('SimpleType')
+        expect(result.primitiveType).toBe('string')
+    })
+})
+
+describe('convert2ArrayType', () => {
+    it('retourne un ArrayType contenant un type simple', () => {
+        const dummyContainer = { $type: 'TypeAttribute' } as any
+        const result = converter.convert2ArrayType({ name: 'string', $type: 'PrimitiveType' } as any, dummyContainer, false, umlModel.AggregationKind.none)
+        expect(result.$type).toBe('ArrayType')
+        expect(result.elementType.$type).toBe('SimpleType')
+    })
+})
+
+describe('convert2ReferenceType', () => {
+    it('retourne un ReferenceType avec un SimpleType interne', () => {
+        const dummyContainer = { $type: 'TypeAttribute' } as any
+        const refType = converter.convert2ReferenceType({ name: 'OtherClass', $type: 'Class' } as any, dummyContainer, false, umlModel.AggregationKind.none)
+        expect(refType.$type).toBe('ReferenceType')
+        expect(refType.referenceType.$type).toBe('SimpleType')
+    })
+})
+
+describe('convert2AbstractType', () => {
+    it('retourne Interface si $type est Class', () => {
+        const dummy = converter.convert2AbstractType({ name: 'C', $type: 'Class' } as any, { $type: 'Action' } as any, false, false, umlModel.AggregationKind.none)
+        expect(dummy.$type).toBe('Interface')
+    })
+    it('retourne Type sinon', () => {
+        const dummy = converter.convert2AbstractType({ name: 'T', $type: 'PrimitiveType' } as any, { $type: 'Action' } as any, false, false, umlModel.AggregationKind.none)
+        expect(dummy.$type).toBe('Type')
+    })
+})
+
+describe('isReference', () => {
+    it('renvoie true pour Class', () => {
+        expect(converter.isReference({ $type: 'Class' } as any)).toBe(true)
+    })
+    it('renvoie false pour DataType', () => {
+        expect(converter.isReference({ $type: 'DataType' } as any)).toBe(false)
+    })
+})
+
+describe('property2Attribute', () => {
+    it('ajoute un attribut converti à une interface', () => {
+        const stateClass = umlModelConverted.find(e => e.name === 'State') as umlModel.Class
+        const iface = converter.convertClass(stateClass, { $type: 'Grammar' } as any, 0)
+        const lengthBefore = iface.attributes.length
+        converter.property2Attribute(stateClass.attributes[0], iface)
+        expect(iface.attributes.length).toBe(lengthBefore + 1)
+    })
+})
+
+describe('convertModel (cas erreur)', () => {
+    it('lève une erreur si une association a 0 navigableOwnedEnd', () => {
+        const badAssoc = {
+            $type: 'Association',
+            navigableOwnedEnd: [],
+            ownedEnd: [{}, {}]
+        } as unknown as umlModel.Association
+        expect(() => converter.convertModel([badAssoc])).toThrow()
     })
 })

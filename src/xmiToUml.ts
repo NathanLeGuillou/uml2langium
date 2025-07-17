@@ -30,7 +30,7 @@ export function transformXmlIntoJObj(path: fs.PathOrFileDescriptor, fullJObj: bo
 type IdMap = Map<string, Struct>
 
 
-export let jObjTest = transformXmlIntoJObj('./src/fsmModel.uml')
+export let jObjTest = transformXmlIntoJObj('./src/fsmModelV2.uml')
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES

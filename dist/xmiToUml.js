@@ -23,7 +23,7 @@ export function transformXmlIntoJObj(path, fullJObj = false) {
     const parser = new XMLParser(options);
     return fullJObj ? parser.parse(xmlFile) : parser.parse(xmlFile)['uml:Model']['packagedElement'];
 }
-export let jObjTest = transformXmlIntoJObj('./src/fsmModel.uml');
+export let jObjTest = transformXmlIntoJObj('./src/fsmModelV2.uml');
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES

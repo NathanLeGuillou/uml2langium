@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_d14BsEIDEfCAKoLQDDLBjw" name="NewModel">
+  <packagedElement xmi:type="uml:Class" xmi:id="_nagZoEIDEfCAKoLQDDLBjw" name="FSM" visibility="public"/>
+  <packagedElement xmi:type="uml:Class" xmi:id="_MOAWoEIEEfCAKoLQDDLBjw" name="State" visibility="public">
+    <ownedAttribute xmi:id="_mT0PoEIJEfCAKoLQDDLBjw" name="name" type="_Cwc78GMSEfCBFMaGgobX9Q"/>
+    <ownedAttribute xmi:id="_x4LDoEIJEfCAKoLQDDLBjw" name="final" type="_E337cGMSEfCBFMaGgobX9Q"/>
+    <ownedOperation xmi:id="_ipumsEINEfCAKoLQDDLBjw" name="addTransition">
+      <ownedParameter xmi:id="_mzTEIEINEfCAKoLQDDLBjw" name="Transition" type="_ckYSsEIFEfCAKoLQDDLBjw"/>
+    </ownedOperation>
+    <ownedOperation xmi:id="_tyJsoEINEfCAKoLQDDLBjw" name="getFollowingState">
+      <ownedParameter xmi:id="_87d1IEINEfCAKoLQDDLBjw" name="indexOfChosenTransition" type="__G1w8GMREfCBFMaGgobX9Q">
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_SyQLoGMSEfCBFMaGgobX9Q" value="1"/>
+      </ownedParameter>
+    </ownedOperation>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Class" xmi:id="_ckYSsEIFEfCAKoLQDDLBjw" name="Transition" visibility="public">
+    <ownedAttribute xmi:id="_xm1t8EIHEfCAKoLQDDLBjw" name="name" type="_Cwc78GMSEfCBFMaGgobX9Q"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_22svsEKkEfCUIemTzjNxJw" name="statesContainedInFSM" memberEnd="_22uk4EKkEfCUIemTzjNxJw _22xBIEKkEfCUIemTzjNxJw" navigableOwnedEnd="_22xBIEKkEfCUIemTzjNxJw">
+    <ownedEnd xmi:id="_22uk4EKkEfCUIemTzjNxJw" name="fSm" type="_nagZoEIDEfCAKoLQDDLBjw" association="_22svsEKkEfCUIemTzjNxJw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_22waEEKkEfCUIemTzjNxJw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_22waEUKkEfCUIemTzjNxJw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_22xBIEKkEfCUIemTzjNxJw" name="OwnedStates" type="_MOAWoEIEEfCAKoLQDDLBjw" aggregation="composite" association="_22svsEKkEfCUIemTzjNxJw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_22xoMEKkEfCUIemTzjNxJw"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_22xoMUKkEfCUIemTzjNxJw" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_dhmkIEKuEfCUIemTzjNxJw" name="startingStates" memberEnd="_dhmkIUKuEfCUIemTzjNxJw _dhnLMkKuEfCUIemTzjNxJw" navigableOwnedEnd="_dhnLMkKuEfCUIemTzjNxJw">
+    <ownedEnd xmi:id="_dhmkIUKuEfCUIemTzjNxJw" name="fsm" type="_nagZoEIDEfCAKoLQDDLBjw" association="_dhmkIEKuEfCUIemTzjNxJw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_dhnLMEKuEfCUIemTzjNxJw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_dhnLMUKuEfCUIemTzjNxJw" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_dhnLMkKuEfCUIemTzjNxJw" name="Initialstates" type="_MOAWoEIEEfCAKoLQDDLBjw" association="_dhmkIEKuEfCUIemTzjNxJw">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_dhnyQEKuEfCUIemTzjNxJw" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_dhnyQUKuEfCUIemTzjNxJw" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="_YMRcwGLwEfCBFMaGgobX9Q" name="OwnedTransitions" memberEnd="_YMTR8GLwEfCBFMaGgobX9Q _YMVHIWLwEfCBFMaGgobX9Q" navigableOwnedEnd="_YMVHIWLwEfCBFMaGgobX9Q">
+    <ownedEnd xmi:id="_YMTR8GLwEfCBFMaGgobX9Q" name="state" type="_MOAWoEIEEfCAKoLQDDLBjw" association="_YMRcwGLwEfCBFMaGgobX9Q">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_YMUgEGLwEfCBFMaGgobX9Q" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_YMVHIGLwEfCBFMaGgobX9Q" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="_YMVHIWLwEfCBFMaGgobX9Q" name="transitions" type="_ckYSsEIFEfCAKoLQDDLBjw" aggregation="composite" association="_YMRcwGLwEfCBFMaGgobX9Q">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="_YMVuMGLwEfCBFMaGgobX9Q"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="_YMWVQGLwEfCBFMaGgobX9Q" value="*"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Association" xmi:id="__xeacGLyEfCBFMaGgobX9Q" name="TransitionPointTo" memberEnd="__xeacWLyEfCBFMaGgobX9Q __xfBgWLyEfCBFMaGgobX9Q" navigableOwnedEnd="__xfBgWLyEfCBFMaGgobX9Q">
+    <ownedEnd xmi:id="__xeacWLyEfCBFMaGgobX9Q" name="transitions" type="_ckYSsEIFEfCAKoLQDDLBjw" association="__xeacGLyEfCBFMaGgobX9Q">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="__xeacmLyEfCBFMaGgobX9Q" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="__xfBgGLyEfCBFMaGgobX9Q" value="1"/>
+    </ownedEnd>
+    <ownedEnd xmi:id="__xfBgWLyEfCBFMaGgobX9Q" name="state" type="_MOAWoEIEEfCAKoLQDDLBjw" association="__xeacGLyEfCBFMaGgobX9Q">
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="__xfBgmLyEfCBFMaGgobX9Q" value="1"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="__xfBg2LyEfCBFMaGgobX9Q" value="1"/>
+    </ownedEnd>
+  </packagedElement>
+  <packagedElement xmi:type="uml:PrimitiveType" xmi:id="__G1w8GMREfCBFMaGgobX9Q" name="integer" visibility="public"/>
+  <packagedElement xmi:type="uml:PrimitiveType" xmi:id="_Cwc78GMSEfCBFMaGgobX9Q" name="string" visibility="public"/>
+  <packagedElement xmi:type="uml:PrimitiveType" xmi:id="_E337cGMSEfCBFMaGgobX9Q" name="boolean" visibility="public"/>
+</uml:Model>

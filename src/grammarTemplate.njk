@@ -1,0 +1,48 @@
+grammar {{ name }}
+
+entry {{ entryRule }}
+
+
+terminal ID: /[_a-zA-Z][_a-zA-Z0-9]*/;
+{% for type in primitiveTypes %}
+    terminal {{ type.name }}: {{ type.regex }}; ############## remplacer type.regex par une fonction qui prend le type et renvoie le regex
+{% endfor %}
+
+{#
+
+{% for iface in interfaces %}
+{{ iface.name }} return {{ iface.name -}}:
+
+    {%for attr in iface.attributes %}
+        {%- if attr.type.$type == 'ArrayType' %}
+    "["
+        ({{attr.name}} += {{attr.type.elementType.typeRef.$refText}}
+        ("," {{attr.name}} += {{attr.type.elementType.typeRef.$refText}})*)?
+    "]"
+        
+        {%-elif attr.type.$type == 'TypeAttribute'-%}
+      
+    {{-attr.name}} {%if attr.isOptional%} ?= {%else%} = {%endif%} {{attr.type.name}}
+
+        {%-elif attr.type.$type == 'SimpleType'-%}
+
+    
+    {{attr.name}} {%if attr.isOptional%} ?= {%else%} = {%endif%} {{attr.type.typeRef.$refText}}
+        {%elif attr.type.$type == 'ReferenceType'-%}
+        
+        {%-endif-%}
+
+    {%endfor%}
+
+{% endfor %}
+
+#}
+
+
+{%- for iface in interfaces %}
+interface {{ iface.name }} {
+    {%- for attr in iface.attributes %}
+    {{ attr.name }}: {{ getTypeString(attr.type) -}}
+    {%- endfor %}
+}
+{% endfor %}

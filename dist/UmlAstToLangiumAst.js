@@ -3,6 +3,27 @@ export class U2LConverter {
     interfMap = new Map;
     propretiesArray = new Array;
     refArray = new Array;
+    interfArray = new Array;
+    primitiveTypeArray = new Array;
+    regexMap = {
+        "string": 'terminal STRING: /"(\\\\.|[^"\\\\])*"/;',
+        "boolean": 'terminal BOOLEAN: /true|false/;',
+        "Date": 'terminal DATE: /\\d{4}-\\d{2}-\\d{2}/;',
+        "bigint": 'terminal INT: /[0-9]+/;',
+        "number": 'terminal FLOAT: /[0-9]+\\.[0-9]+/;',
+    };
+    getTypeString(type) {
+        if (type.$type === 'ReferenceType') {
+            return this.getTypeString(type.referenceType);
+        }
+        if (type.$type === 'ArrayType') {
+            return `${this.getTypeString(type.elementType)}[]`;
+        }
+        if (type.$type === 'SimpleType') {
+            return type.primitiveType ? type.primitiveType : type.typeRef.$refText;
+        }
+        return 'unknown';
+    }
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *
@@ -10,22 +31,27 @@ export class U2LConverter {
      * @returns Le type primitif Langium correspondant, ou `undefined` si non reconnu.
      */
     convertPrimitiveTypes(primitiveType) {
+        let result;
         if (primitiveType.name == "string") {
-            return 'string';
+            result = 'string';
         }
         else if (primitiveType.name == "boolean") {
-            return 'boolean';
+            result = 'boolean';
         }
         else if (primitiveType.name == "float") {
-            return 'number';
+            result = 'number';
         }
         else if (primitiveType.name == "integer") {
-            return 'bigint';
+            result = 'bigint';
         }
         else if (primitiveType.name == "date") {
-            return 'Date';
+            result = 'Date';
         }
-        return undefined;
+        else {
+            return undefined;
+        }
+        this.primitiveTypeArray.push(result);
+        return result;
     }
     /**
      * Convertit une classe ou une interface UML en une interface Langium.
@@ -48,6 +74,7 @@ export class U2LConverter {
         attributes.push(...interfaceOrClass.attributes
             .map((prop, index) => this.convertProperty(prop, result, index)));
         this.interfMap.set(result.name, result);
+        this.interfArray.push(result);
         return result;
     }
     /**

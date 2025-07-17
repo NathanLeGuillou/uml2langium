@@ -4,6 +4,10 @@ export declare class U2LConverter {
     private interfMap;
     private propretiesArray;
     private refArray;
+    interfArray: GrammarAST.Interface[];
+    primitiveTypeArray: GrammarAST.PrimitiveType[];
+    private regexMap;
+    getTypeString(type: GrammarAST.TypeDefinition): string;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
      *

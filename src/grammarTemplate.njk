@@ -32,6 +32,14 @@ terminal ID: /[_a-zA-Z][_a-zA-Z0-9]*/;
 {% endfor %}
 #}
 
+{%-for enum in enumerations%}
+{%if enum.types.length == 1 %}
+interface {{enum.types[0].stringType}} {} //! an empty interface was generated because the corresponding enumeration was empty
+{%else%}
+type {{enum.types[0].stringType}} = {{enum.types[1].stringType | safe}} {%for type in enum.types.slice(2) %} | {{type.stringType | safe}} {%endfor%}
+{%-endif%}
+
+{%endfor%}
 {% for iface in interfaces %}
 interface {{ iface.name }}
     {%- if iface.superTypes.length > 0 %} extends {% for superT in iface.superTypes %}

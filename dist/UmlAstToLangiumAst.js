@@ -5,6 +5,7 @@ export class U2LConverter {
     refArray = new Array;
     interfArray = new Array;
     primitiveTypeArray = new Array;
+    enumArray = new Array;
     terminalMap = {
         "string": `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
         "boolean": 'terminal BOOLEAN: /\\b(?:true|false)\\b/;',
@@ -48,23 +49,24 @@ export class U2LConverter {
      */
     convertPrimitiveTypes(primitiveType) {
         let result;
-        if (primitiveType.name == "string") {
+        const typeName = primitiveType.name.toLowerCase();
+        if (typeName == "string" || typeName == "str") {
             result = 'string';
         }
-        else if (primitiveType.name == "boolean") {
+        else if (typeName == "boolean" || typeName == "bool") {
             result = 'boolean';
         }
-        else if (primitiveType.name == "float") {
+        else if (typeName == "float" || typeName == "double") {
             result = 'number';
         }
-        else if (primitiveType.name == "integer") {
+        else if (typeName == "integer" || typeName == "int") {
             result = 'bigint';
         }
         else if (primitiveType.name == "date") {
             result = 'Date';
         }
         else {
-            return undefined;
+            result = undefined;
         }
         this.primitiveTypeArray.push(result);
         return result;
@@ -97,9 +99,6 @@ export class U2LConverter {
                         ref: convertedClass,
                         $refText: convertedClass.name
                     });
-                    // for( const attr of convertedClass.attributes){
-                    //     attributes.push(attr)
-                    // }
                 }
             }
         }
@@ -193,6 +192,36 @@ export class U2LConverter {
             $containerIndex: index,
             superTypes: []
         };
+    }
+    /**
+     * le premier types dans types est le nom de l'enumeration, le reste sont ses éléments
+     * @param enumeration
+     * @param container
+     * @returns
+     */
+    convertEnum(enumeration, container) {
+        const unionType = {
+            $type: 'UnionType',
+            types: [],
+            $container: container,
+            $containerIndex: undefined
+        };
+        unionType.types.push({
+            $type: 'SimpleType',
+            $container: unionType,
+            $containerIndex: 0,
+            stringType: enumeration.name
+        });
+        for (const elem of enumeration.ownedLiteral) {
+            const enumElem = {
+                $type: 'SimpleType',
+                $container: unionType,
+                $containerIndex: unionType.types.length,
+                stringType: `'${elem.name}'`
+            };
+            unionType.types.push(enumElem);
+        }
+        return unionType;
     }
     /**
     * Convertit un type UML en `SimpleType` Langium, principalement utilisé pour les types primitifs.
@@ -300,6 +329,10 @@ export class U2LConverter {
                 else {
                     throw new Error(`there can't be ${value.navigableOwnedEnd.length} navigableOwnedEnd on an association.`);
                 }
+            }
+            else if (isEnumeration(value)) {
+                const convertedValue = this.convertEnum(value);
+                this.enumArray.push(convertedValue);
             }
         });
         for (const [prop1, prop2] of this.propretiesArray) {

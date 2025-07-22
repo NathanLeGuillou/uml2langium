@@ -1,6 +1,7 @@
-import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement } from './umlMetamodel.js'
+import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement, Enumeration } from './umlMetamodel.js'
 import {DefaultReferences, GrammarAST} from 'langium'
 import { classConverter } from './xmiToUml.js'
+import { UnionType } from 'langium/grammar'
 
 export class U2LConverter{
 
@@ -10,6 +11,7 @@ export class U2LConverter{
 
     public interfArray = new Array<GrammarAST.Interface>
     public primitiveTypeArray = new Array<GrammarAST.PrimitiveType>
+    public enumArray = new Array<GrammarAST.UnionType>
 
     private  terminalMap: Record<GrammarAST.PrimitiveType , string> = { //? mettre datatype ? 
         "string" : `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
@@ -112,9 +114,6 @@ export class U2LConverter{
                         ref: convertedClass,
                         $refText: convertedClass.name
                     })
-                    // for( const attr of convertedClass.attributes){
-                    //     attributes.push(attr)
-                    // }
                 }
             }
         }
@@ -215,6 +214,39 @@ export class U2LConverter{
             $containerIndex: index,
             superTypes: []
         }
+    }
+
+        /**
+         * le premier types dans types est le nom de l'enumeration, le reste sont ses éléments
+         * @param enumeration 
+         * @param container 
+         * @returns 
+         */
+    convertEnum(enumeration: Enumeration, container?: GrammarAST.TypeAttribute | GrammarAST.ArrayType | GrammarAST.ReferenceType 
+        | GrammarAST.UnionType | GrammarAST.Type): GrammarAST.UnionType{
+        const unionType: GrammarAST.UnionType = {
+        $type: 'UnionType',
+        types: [],
+        $container: container,
+        $containerIndex: undefined
+        }
+        unionType.types.push({
+                $type: 'SimpleType',
+                $container: unionType,
+                $containerIndex: 0,
+                stringType: enumeration.name
+            })
+
+        for(const elem of enumeration.ownedLiteral){
+            const enumElem:GrammarAST.SimpleType = {
+                $type: 'SimpleType',
+                $container: unionType,
+                $containerIndex: unionType.types.length,
+                stringType: `'${elem.name}'`
+            }
+            unionType.types.push(enumElem)
+        }
+        return unionType
     }
 
     /**
@@ -334,6 +366,10 @@ export class U2LConverter{
                 else{
                     throw new Error(`there can't be ${value.navigableOwnedEnd.length} navigableOwnedEnd on an association.`)
                 }
+            }
+            else if(isEnumeration(value)){
+                const convertedValue = this.convertEnum(value)
+                this.enumArray.push(convertedValue)
             }
         })
         for(const [prop1, prop2] of this.propretiesArray){

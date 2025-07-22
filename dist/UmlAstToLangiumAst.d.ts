@@ -1,4 +1,4 @@
-import { Interface, Class, NamedElement, Property, AggregationKind, Type, PrimitiveType } from './umlMetamodel.js';
+import { Interface, Class, NamedElement, Property, AggregationKind, Type, PrimitiveType, Enumeration } from './umlMetamodel.js';
 import { GrammarAST } from 'langium';
 export declare class U2LConverter {
     private interfMap;
@@ -6,6 +6,7 @@ export declare class U2LConverter {
     private refArray;
     interfArray: GrammarAST.Interface[];
     primitiveTypeArray: GrammarAST.PrimitiveType[];
+    enumArray: GrammarAST.UnionType[];
     private terminalMap;
     getTerminal(primitiveType: GrammarAST.PrimitiveType): string;
     removeDuplicates<T>(arr: T[], seen?: Set<T>, index?: number): void;
@@ -63,6 +64,13 @@ export declare class U2LConverter {
     * @returns Un objet `AbstractType` Langium (`Interface` ou `Type`).
     */
     convert2AbstractType(type: Type, container: GrammarAST.Action, isArray: boolean, isOptional: boolean, aggregationKind: AggregationKind, index?: number): GrammarAST.AbstractType;
+    /**
+     * le premier types dans types est le nom de l'enumeration, le reste sont ses éléments
+     * @param enumeration
+     * @param container
+     * @returns
+     */
+    convertEnum(enumeration: Enumeration, container?: GrammarAST.TypeAttribute | GrammarAST.ArrayType | GrammarAST.ReferenceType | GrammarAST.UnionType | GrammarAST.Type): GrammarAST.UnionType;
     /**
     * Convertit un type UML en `SimpleType` Langium, principalement utilisé pour les types primitifs.
     *

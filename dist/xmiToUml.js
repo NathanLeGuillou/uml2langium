@@ -257,6 +257,34 @@ export function classConverter(classAst, IDs) {
     }
     return convertedClass;
 }
+function enumConverter(enumAst) {
+    const enumeration = {
+        $type: "Enumeration",
+        name: enumAst["@_name"],
+        visibility: visibility(enumAst['@_visibility']),
+        ownedElement: [],
+        owner: undefined,
+        isAbstract: false,
+        inheritedMember: [],
+        feature: [],
+        generalisations: [],
+        general: undefined,
+        attributes: [],
+        member: undefined,
+        ownedLiteral: []
+    };
+    for (const elem of enumAst["ownedLiteral"]) {
+        const enumLitteral = {
+            $type: "EnumerationLitteral",
+            name: elem["@_name"],
+            visibility: visibility(elem['@_visibility']),
+            ownedElement: [],
+            owner: enumeration
+        };
+        enumeration.ownedLiteral.push(enumLitteral);
+    }
+    return enumeration;
+}
 function generalisationConverter(genAst, Ids) {
     const result = {
         $type: "Generalization",
@@ -355,6 +383,9 @@ export function xmi2Umlconverter(ast) {
         }
         else if (elem['@_xmi:type'] === 'uml:PrimitiveType') {
             model.push(primitiveTypeConverter(elem));
+        }
+        else if (elem['@_xmi:type'] === 'uml:Enumeration') {
+            model.push(enumConverter(elem));
         }
         else {
             throw new Error(`type ${elem['@_xmi:type']} is not recognised (function xmi2Umlconverter)`);

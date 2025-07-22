@@ -1,5 +1,5 @@
 import fs from "fs";
-import { Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType} from './umlMetamodel.js'
+import { Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, Enumeration, EnumerationLitteral} from './umlMetamodel.js'
 import {Struct} from './xmiMetamodel.types.js'
 import { XMLParser} from "fast-xml-parser";
 
@@ -295,6 +295,36 @@ export function classConverter(classAst: Struct, IDs: IdMap):Class{ //TODO optim
     return convertedClass
 }
 
+function enumConverter(enumAst: Struct): Enumeration{
+    const enumeration: Enumeration = {
+    $type: "Enumeration",
+    name: enumAst["@_name"],
+    visibility: visibility(enumAst['@_visibility']),
+    ownedElement: [],
+    owner: undefined as any, 
+    isAbstract: false,
+    inheritedMember: [],
+    feature: [],
+    generalisations: [],
+    general: undefined as any, 
+    attributes: [],
+    member:undefined,
+    ownedLiteral: []
+    }
+    for(const elem of enumAst["ownedLiteral"]){
+        const enumLitteral: EnumerationLitteral = {
+        $type: "EnumerationLitteral",
+        name: elem["@_name"],
+        visibility: visibility(elem['@_visibility']),
+        ownedElement: [],
+        owner: enumeration
+        }
+
+        enumeration.ownedLiteral.push(enumLitteral)
+    }
+    return enumeration
+}
+
 function generalisationConverter(genAst: Struct, Ids: IdMap): Generalization{
     const result: Generalization = {
         $type: "Generalization",
@@ -398,6 +428,9 @@ export function xmi2Umlconverter(ast: Struct[]):NamedElement[]{
         }
         else if(elem['@_xmi:type'] === 'uml:PrimitiveType'){
             model.push(primitiveTypeConverter(elem))
+        }
+        else if(elem['@_xmi:type'] === 'uml:Enumeration'){
+            model.push(enumConverter(elem))
         }
         else {
             throw new Error(`type ${elem['@_xmi:type']} is not recognised (function xmi2Umlconverter)`)

@@ -2,6 +2,8 @@ import { writeFileSync } from 'fs';
 import { U2LConverter } from './UmlAstToLangiumAst.js';
 import { transformXmlIntoJObj, xmi2Umlconverter } from './xmiToUml.js';
 import nunjucks from 'nunjucks';
+import chalk from 'chalk';
+console.error(chalk.red(' Usage: generate --input <uml.xmi> --output <grammar.langium>'));
 export function converter(pathToXML, langiumFileLocation) {
     const uml2langium = new U2LConverter();
     const jObj = transformXmlIntoJObj(pathToXML);
@@ -15,7 +17,6 @@ export function converter(pathToXML, langiumFileLocation) {
         getTerminal: (type) => uml2langium.getTerminal(type)
     };
     const grammarTemplate = nunjucks.render('src/grammarTemplate.njk', contexte);
-    console.log(grammarTemplate);
     writeFileSync(langiumFileLocation, grammarTemplate);
 }
 converter('/home/nleguillou/workspace/FSM/model.uml', 'src/langFiles/langFile.langium');

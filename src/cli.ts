@@ -3,8 +3,6 @@ import { converter } from './main.js'
 import { existsSync } from 'fs'
 import chalk from 'chalk'
 
-
-
 const args = minimist(process.argv.slice(2))
 const command = args._[0]
 
@@ -14,12 +12,12 @@ switch (command) {
         const output = args.output || args.o
 
         if (!input || !output) {
-            console.error(' Usage: generate --input <uml.xmi> --output <grammar.langium>')
+            console.error(chalk.red(' Usage: generate --input <uml.xmi> --output <grammar.langium>'))
             process.exit(1)
         }
 
         if (!existsSync(input)) {
-            console.error(` Le fichier ${input} n'existe pas.`)
+            console.error(chalk.red(` Le fichier ${input} n'existe pas.`))
             process.exit(1)
         }
 
@@ -27,7 +25,7 @@ switch (command) {
             converter(input, output)
             console.log(chalk.green(`Fichier Langium généré avec succès dans "${output}".`))
         } catch (e) {
-            console.error(`Erreur lors de la génération :`, e)
+            console.error(chalk.red(`Erreur lors de la génération :`, e))
             process.exit(1)
         }
         break

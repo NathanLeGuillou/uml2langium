@@ -119,7 +119,6 @@ export class U2LConverter{
         }
 
         this.interfMap.set(result.name, result)
-        this.interfArray.push(result)
         return result
     }
 
@@ -353,6 +352,7 @@ export class U2LConverter{
         elems.forEach((value , index) =>{
             if(isClass(value) || isInterface(value)){
                 const convertedValue = this.convertClass(value, grammar, index)
+                this.interfArray.push(convertedValue)
                 result.push(convertedValue)
             }
             else if(isAssociation(value)){

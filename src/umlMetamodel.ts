@@ -1,6 +1,3 @@
-import fs from "fs";
-import { Visitor } from "./visitor.js";
-
 export interface Element {
     $type: "DirectedRelationship" | "Generalization"  | "Class" | "DataType" | "Interface" | "Enumeration" | "PrimitiveType" | "Association" | "AssociationClass" | "Property" | "EnumerationLitteral" |
              "TypedElement" | "StructuralFeature",

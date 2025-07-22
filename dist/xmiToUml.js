@@ -23,20 +23,6 @@ export function transformXmlIntoJObj(path, fullJObj = false) {
     const parser = new XMLParser(options);
     return fullJObj ? parser.parse(xmlFile) : parser.parse(xmlFile)['uml:Model']['packagedElement'];
 }
-export let jObjTestActuel = transformXmlIntoJObj('/home/nleguillou/workspace/FSM/model.uml');
-export let jObjTest = transformXmlIntoJObj('./src/fsmModelV2.uml');
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
-//! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
 /**
  * Construit une `IdMap` à partir d'une liste d'objets `Struct`, représentant l'arbre syntaxique
  * d’un modèle UML.

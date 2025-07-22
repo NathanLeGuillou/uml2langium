@@ -1,23 +1,26 @@
-import { LangiumFormatter } from './formatter.js'
+import {writeFileSync} from 'fs'
 import {U2LConverter} from './UmlAstToLangiumAst.js'
-import { jObjTest, jObjTestActuel, xmi2Umlconverter } from './xmiToUml.js'
-import nunjucks from 'nunjucks';
+import { transformXmlIntoJObj, xmi2Umlconverter } from './xmiToUml.js'
+import nunjucks from 'nunjucks'
 
+export function converter(pathToXML: string, langiumFileLocation: string):void{
+  const uml2langium = new U2LConverter()
 
-const uml2lang = new U2LConverter()
-const umlObj = xmi2Umlconverter(jObjTestActuel)
-const langObj = uml2lang.convertModel(umlObj)
+  const jObj = transformXmlIntoJObj(pathToXML)
+  const umlObj = xmi2Umlconverter(jObj)
+  const langObj = uml2langium.convertModel(umlObj)
 
-const contexte = {
-  primitiveTypes: uml2lang.primitiveTypeArray,
-  interfaces: uml2lang.interfArray,
-  enumerations: uml2lang.enumArray,
-  getTypeString: (type) => uml2lang.getTypeString(type),
-  getTerminal: (type) => uml2lang.getTerminal(type)
-};
+  const contexte = {
+  primitiveTypes: uml2langium.primitiveTypeArray,
+  interfaces: uml2langium.interfArray,
+  enumerations: uml2langium.enumArray,
+  getTypeString: (type) => uml2langium.getTypeString(type),
+  getTerminal: (type) => uml2langium.getTerminal(type)
+  }
 
-const grammarTemplate = nunjucks.render('src/grammarTemplate.njk', contexte)
+  const grammarTemplate = nunjucks.render('src/grammarTemplate.njk', contexte)
 
-console.log(grammarTemplate)
-const a = 1
-const b = 2
+  writeFileSync(langiumFileLocation, grammarTemplate)
+}
+
+converter('/home/nleguillou/workspace/FSM/model.uml', 'src/langFiles/langFile.langium')

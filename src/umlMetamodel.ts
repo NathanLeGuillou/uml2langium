@@ -29,7 +29,7 @@ export interface Generalization extends DirectedRelationship {
 export interface GeneralisationSet {
     isCovering: boolean
     isDisjoint: boolean
-    generalizations: Generalization[]
+    generalizations: Generalization[] 
 }
 
 export enum VisibilityKind {

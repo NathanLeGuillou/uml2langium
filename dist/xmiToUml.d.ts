@@ -17,6 +17,7 @@ import { Struct } from './xmiMetamodel.types.js';
  */
 export declare function transformXmlIntoJObj(path: fs.PathOrFileDescriptor, fullJObj?: boolean): Struct[];
 type IdMap = Map<string, Struct>;
+export declare let jObjTestActuel: Struct[];
 export declare let jObjTest: Struct[];
 /**
  * Construit une `IdMap` à partir d'une liste d'objets `Struct`, représentant l'arbre syntaxique

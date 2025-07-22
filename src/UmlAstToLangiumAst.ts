@@ -1,5 +1,6 @@
 import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement } from './umlMetamodel.js'
 import {DefaultReferences, GrammarAST} from 'langium'
+import { classConverter } from './xmiToUml.js'
 
 export class U2LConverter{
 
@@ -10,13 +11,31 @@ export class U2LConverter{
     public interfArray = new Array<GrammarAST.Interface>
     public primitiveTypeArray = new Array<GrammarAST.PrimitiveType>
 
-    private  regexMap: Record<GrammarAST.PrimitiveType , string> = { //? mettre datatype ? 
-        "string" : 'terminal STRING: /"(\\\\.|[^"\\\\])*"/;',
-        "boolean": 'terminal BOOLEAN: /true|false/;',
-        "Date": 'terminal DATE: /\\d{4}-\\d{2}-\\d{2}/;',
-        "bigint": 'terminal INT: /[0-9]+/;',
-        "number": 'terminal FLOAT: /[0-9]+\\.[0-9]+/;',
+    private  terminalMap: Record<GrammarAST.PrimitiveType , string> = { //? mettre datatype ? 
+        "string" : `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
+        "boolean": 'terminal BOOLEAN: /\\b(?:true|false)\\b/;',
+        "Date": 'terminal DATE: /^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\\d{4}|\\d{2})$;',
+        "bigint": 'terminal INT: ^\\d+$;',
+        "number": 'terminal FLOAT: [-+]?[0-9]*\\.?[0-9]+;',
     }
+
+    getTerminal(primitiveType: GrammarAST.PrimitiveType): string{
+        return this.terminalMap[primitiveType]
+    }
+
+    removeDuplicates<T>(arr: T[], seen = new Set<T>(), index = 0): void {
+    if (index >= arr.length) return;
+
+        const value = arr[index];
+    if (seen.has(value)) {
+        arr.splice(index, 1);
+        this.removeDuplicates(arr, seen, index);
+    }
+    else {
+        seen.add(value);
+        this.removeDuplicates(arr, seen, index + 1);
+  }
+}
 
     getTypeString(type: GrammarAST.TypeDefinition): string {
         if (type.$type === 'ReferenceType') {
@@ -39,23 +58,24 @@ export class U2LConverter{
      */
     convertPrimitiveTypes(primitiveType: PrimitiveType): GrammarAST.PrimitiveType | undefined {
         let result: GrammarAST.PrimitiveType
-        if (primitiveType.name == "string") {
+        const typeName = primitiveType.name.toLowerCase() 
+        if (typeName == "string" || typeName == "str") {
             result = 'string'
         }
-        else if (primitiveType.name == "boolean") {
+        else if (typeName == "boolean" || typeName == "bool") {
             result = 'boolean'
         }
-        else if (primitiveType.name == "float") {
+        else if (typeName == "float" || typeName == "double") {
             result = 'number'
         }
-        else if (primitiveType.name == "integer") {
+        else if (typeName == "integer" || typeName == "int") {
             result = 'bigint'
         }
         else if (primitiveType.name == "date") {
             result = 'Date'
         }
         else{
-            return undefined
+            result = undefined
         }
         this.primitiveTypeArray.push(result)
         return result
@@ -83,6 +103,22 @@ export class U2LConverter{
         attributes.push(...interfaceOrClass.attributes
             .map((prop, index) => this.convertProperty(prop, result, index))
         )
+        if(interfaceOrClass.generalisations.length > 0){
+            
+            for(const gen of interfaceOrClass.generalisations){
+                for(const targ of gen.target as Class[]){
+                    const convertedClass = this.convertClass(targ, container, result.attributes.length)
+                    result.superTypes.push({
+                        ref: convertedClass,
+                        $refText: convertedClass.name
+                    })
+                    // for( const attr of convertedClass.attributes){
+                    //     attributes.push(attr)
+                    // }
+                }
+            }
+        }
+
         this.interfMap.set(result.name, result)
         this.interfArray.push(result)
         return result
@@ -105,6 +141,22 @@ export class U2LConverter{
             name: property.name,
         }
         result.type = this.convertType(property.type, result as GrammarAST.TypeAttribute, property.upper > 1, property.lower == 0, property.agggregation)
+        return result as GrammarAST.TypeAttribute
+    }
+
+    convertPropretyToRef(property: Property, container: GrammarAST.Interface, index: number): GrammarAST.TypeAttribute {
+        const result: Omit<GrammarAST.TypeAttribute, 'type'> & Partial<Pick<GrammarAST.TypeAttribute, 'type'>> = {
+            $type: 'TypeAttribute',
+            $container: container,
+            $containerIndex: index,
+            isOptional: property.lower == 0,
+            name: property.name,
+        }
+        result.type =  {
+            $container : result as GrammarAST.TypeAttribute,
+            $type: 'ReferenceType',
+            referenceType : this.convertType(property.type, result as GrammarAST.TypeAttribute, property.upper > 1, property.lower == 0, property.agggregation)
+        }
         return result as GrammarAST.TypeAttribute
     }
 
@@ -286,12 +338,20 @@ export class U2LConverter{
         })
         for(const [prop1, prop2] of this.propretiesArray){
             const interfName = prop1.type.name
-            this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)) // push la property convertie en objet langium
+            this.interfMap.get(interfName).attributes.push(
+                prop2.agggregation == AggregationKind.composite ?
+                this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length) :
+                this.convertPropretyToRef(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)
+                
+            ) // push la property convertie en objet langium
             
         }
         this.refArray.forEach(simpleType => {
-            (simpleType.typeRef as any).ref = this.interfMap.get(simpleType.typeRef.$refText)
+            if(simpleType.typeRef){
+                (simpleType.typeRef as any).ref = this.interfMap.get(simpleType.typeRef.$refText)
+        }
         })
+        this.removeDuplicates(this.primitiveTypeArray)
         return grammar
     }
 }

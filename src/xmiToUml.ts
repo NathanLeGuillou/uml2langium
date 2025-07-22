@@ -1,5 +1,5 @@
 import fs from "fs";
-import { Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type} from './umlMetamodel.js'
+import { Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType} from './umlMetamodel.js'
 import {Struct} from './xmiMetamodel.types.js'
 import { XMLParser} from "fast-xml-parser";
 
@@ -29,6 +29,7 @@ export function transformXmlIntoJObj(path: fs.PathOrFileDescriptor, fullJObj: bo
 
 type IdMap = Map<string, Struct>
 
+export let jObjTestActuel = transformXmlIntoJObj('/home/nleguillou/workspace/FSM/model.uml')
 
 export let jObjTest = transformXmlIntoJObj('./src/fsmModelV2.uml')
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
@@ -57,6 +58,27 @@ export function createIdMap(ast: Struct[]): IdMap{
     let idMap = new Map<string, Struct>();
     fillIdMap(ast, idMap);
     return idMap;
+}
+
+function primitiveTypeConverter(primitiveTypeAst: Struct): PrimitiveType{
+    return {
+    $type: "PrimitiveType",
+    name: primitiveTypeAst['@_name'], 
+    visibility: visibility(primitiveTypeAst['@_visibility']), 
+
+    owner: undefined as any,
+    ownedElement: [],
+
+    member: undefined as any,
+
+    isAbstract: false,                
+    inheritedMember: [],
+    feature: [],
+    generalisations: [],
+    general: undefined as any, 
+    attributes: [],
+
+};
 }
 
 /**
@@ -172,7 +194,11 @@ export function typeConverter(typeAst: Struct, IDs: IdMap): Type{
     else if (typeAst['@_xmi:type'] == 'uml:DataType'){
         return dataTypeConverter(typeAst)
     }
+    else if (typeAst['@_xmi:type'] == 'uml:PrimitiveType'){
+        return primitiveTypeConverter(typeAst)
+    }
     else{
+        const a = 1
         throw new Error(`type ${typeAst['@_xmi:type']} is not recognised.`)
     }
 }
@@ -194,7 +220,7 @@ export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: 
         owner: {} as Element,
         ownedElement: [],
         
-        name: propretyAst['@_name'], //TODO sett name
+        name: propretyAst['@_name'],
         visibility: visibility(propretyAst['@_visibility']),
         
         isOrdered: false,
@@ -204,7 +230,7 @@ export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: 
         upper: propretyAst['upperValue'] ? propretyAst['upperValue']['@_value'] == "*" ? 2 : propretyAst['upperValue']['@_value'] : 1 ,
         
         $type: "Property",
-        agggregation: AggregationKind.none,
+        agggregation: propretyAst["@_aggregation"] == 'composite' ? AggregationKind.composite : AggregationKind.none,
         isDerived: false,
         initialValue: {} as Expression,
         association: association,
@@ -226,7 +252,7 @@ export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: 
  * 
  * @returns Une instance de `Class` correctement construite.
  */
-export function classConverter(classAst: Struct, IDs: IdMap):Class{
+export function classConverter(classAst: Struct, IDs: IdMap):Class{ //TODO optimiser la gestion des généralisations (héritage)
     const convertedClass: Class = {
         owner: {} as Element,
         ownedElement: [],
@@ -248,11 +274,46 @@ export function classConverter(classAst: Struct, IDs: IdMap):Class{
     };
     if ('ownedAttribute' in classAst) {
         const ownedAttr = Array.isArray(classAst.ownedAttribute) ? classAst.ownedAttribute : [classAst.ownedAttribute]  
-        for (let subMap of ownedAttr as Struct[]){
+        for (const subMap of ownedAttr as Struct[]){
             convertedClass.attributes.push(propretyConverter(subMap, IDs))
         }
     }
+    if("generalization" in classAst){
+        if(Array.isArray(classAst["generalization"])){
+            for (const gen of classAst["generalization"]){
+                convertedClass.generalisations.push(
+                    generalisationConverter(IDs.get(gen["@_general"]), IDs)
+                )
+            }
+        }
+        else{
+            convertedClass.generalisations.push(
+                generalisationConverter(IDs.get(classAst["generalization"]["@_general"]), IDs)
+            )
+        }
+    }
     return convertedClass
+}
+
+function generalisationConverter(genAst: Struct, Ids: IdMap): Generalization{
+    const result: Generalization = {
+        $type: "Generalization",
+        isSubstituable: false,
+        ownedElement: [],
+        owner: undefined,
+        source: [],
+        specialization: undefined,
+        specific: undefined,
+        target: []
+    }
+    if(genAst["@_xmi:type"] == "uml:Class"){
+        result.target.push(classConverter(genAst, Ids))
+    }
+    else{
+        throw new Error(`Type ${genAst["@_xmi:type"]} is not recognised.`)
+    }
+
+    return result
 }
 
 /**
@@ -335,8 +396,11 @@ export function xmi2Umlconverter(ast: Struct[]):NamedElement[]{
         else if(elem['@_xmi:type'] === 'uml:Association'){
             model.push(associationConverter(elem, IDs))
         }
+        else if(elem['@_xmi:type'] === 'uml:PrimitiveType'){
+            model.push(primitiveTypeConverter(elem))
+        }
         else {
-            throw new Error(`type ${elem['@_xmi:type']} is not recognised`)
+            throw new Error(`type ${elem['@_xmi:type']} is not recognised (function xmi2Umlconverter)`)
         }
     }
 

@@ -23,6 +23,7 @@ export function transformXmlIntoJObj(path, fullJObj = false) {
     const parser = new XMLParser(options);
     return fullJObj ? parser.parse(xmlFile) : parser.parse(xmlFile)['uml:Model']['packagedElement'];
 }
+export let jObjTestActuel = transformXmlIntoJObj('/home/nleguillou/workspace/FSM/model.uml');
 export let jObjTest = transformXmlIntoJObj('./src/fsmModelV2.uml');
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
 //! ENLEVER EXPORT UNE FOIS QUE LES TESTS SONT TERMINES
@@ -49,6 +50,22 @@ export function createIdMap(ast) {
     let idMap = new Map();
     fillIdMap(ast, idMap);
     return idMap;
+}
+function primitiveTypeConverter(primitiveTypeAst) {
+    return {
+        $type: "PrimitiveType",
+        name: primitiveTypeAst['@_name'],
+        visibility: visibility(primitiveTypeAst['@_visibility']),
+        owner: undefined,
+        ownedElement: [],
+        member: undefined,
+        isAbstract: false,
+        inheritedMember: [],
+        feature: [],
+        generalisations: [],
+        general: undefined,
+        attributes: [],
+    };
 }
 /**
  * Remplit récursivement une `IdMap` à partir d’une structure JSON (issue d’un parsing XMI).
@@ -154,7 +171,11 @@ export function typeConverter(typeAst, IDs) {
     else if (typeAst['@_xmi:type'] == 'uml:DataType') {
         return dataTypeConverter(typeAst);
     }
+    else if (typeAst['@_xmi:type'] == 'uml:PrimitiveType') {
+        return primitiveTypeConverter(typeAst);
+    }
     else {
+        const a = 1;
         throw new Error(`type ${typeAst['@_xmi:type']} is not recognised.`);
     }
 }
@@ -181,7 +202,7 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
         // pour upper, si il n'y a pas de limite le max es 2 car dans tous les cas on ne differencie pas les cardinalitées multiples entre elles
         upper: propretyAst['upperValue'] ? propretyAst['upperValue']['@_value'] == "*" ? 2 : propretyAst['upperValue']['@_value'] : 1,
         $type: "Property",
-        agggregation: AggregationKind.none,
+        agggregation: propretyAst["@_aggregation"] == 'composite' ? AggregationKind.composite : AggregationKind.none,
         isDerived: false,
         initialValue: {},
         association: association,
@@ -220,11 +241,40 @@ export function classConverter(classAst, IDs) {
     };
     if ('ownedAttribute' in classAst) {
         const ownedAttr = Array.isArray(classAst.ownedAttribute) ? classAst.ownedAttribute : [classAst.ownedAttribute];
-        for (let subMap of ownedAttr) {
+        for (const subMap of ownedAttr) {
             convertedClass.attributes.push(propretyConverter(subMap, IDs));
         }
     }
+    if ("generalization" in classAst) {
+        if (Array.isArray(classAst["generalization"])) {
+            for (const gen of classAst["generalization"]) {
+                convertedClass.generalisations.push(generalisationConverter(IDs.get(gen["@_general"]), IDs));
+            }
+        }
+        else {
+            convertedClass.generalisations.push(generalisationConverter(IDs.get(classAst["generalization"]["@_general"]), IDs));
+        }
+    }
     return convertedClass;
+}
+function generalisationConverter(genAst, Ids) {
+    const result = {
+        $type: "Generalization",
+        isSubstituable: false,
+        ownedElement: [],
+        owner: undefined,
+        source: [],
+        specialization: undefined,
+        specific: undefined,
+        target: []
+    };
+    if (genAst["@_xmi:type"] == "uml:Class") {
+        result.target.push(classConverter(genAst, Ids));
+    }
+    else {
+        throw new Error(`Type ${genAst["@_xmi:type"]} is not recognised.`);
+    }
+    return result;
 }
 /**
  * Convertit un objet JSON (`Struct`) représentant une association UML en une instance `Association`.
@@ -303,8 +353,11 @@ export function xmi2Umlconverter(ast) {
         else if (elem['@_xmi:type'] === 'uml:Association') {
             model.push(associationConverter(elem, IDs));
         }
+        else if (elem['@_xmi:type'] === 'uml:PrimitiveType') {
+            model.push(primitiveTypeConverter(elem));
+        }
         else {
-            throw new Error(`type ${elem['@_xmi:type']} is not recognised`);
+            throw new Error(`type ${elem['@_xmi:type']} is not recognised (function xmi2Umlconverter)`);
         }
     }
     return model;

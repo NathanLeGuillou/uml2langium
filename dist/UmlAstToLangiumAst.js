@@ -5,13 +5,29 @@ export class U2LConverter {
     refArray = new Array;
     interfArray = new Array;
     primitiveTypeArray = new Array;
-    regexMap = {
-        "string": 'terminal STRING: /"(\\\\.|[^"\\\\])*"/;',
-        "boolean": 'terminal BOOLEAN: /true|false/;',
-        "Date": 'terminal DATE: /\\d{4}-\\d{2}-\\d{2}/;',
-        "bigint": 'terminal INT: /[0-9]+/;',
-        "number": 'terminal FLOAT: /[0-9]+\\.[0-9]+/;',
+    terminalMap = {
+        "string": `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
+        "boolean": 'terminal BOOLEAN: /\\b(?:true|false)\\b/;',
+        "Date": 'terminal DATE: /^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\\d{4}|\\d{2})$;',
+        "bigint": 'terminal INT: ^\\d+$;',
+        "number": 'terminal FLOAT: [-+]?[0-9]*\\.?[0-9]+;',
     };
+    getTerminal(primitiveType) {
+        return this.terminalMap[primitiveType];
+    }
+    removeDuplicates(arr, seen = new Set(), index = 0) {
+        if (index >= arr.length)
+            return;
+        const value = arr[index];
+        if (seen.has(value)) {
+            arr.splice(index, 1);
+            this.removeDuplicates(arr, seen, index);
+        }
+        else {
+            seen.add(value);
+            this.removeDuplicates(arr, seen, index + 1);
+        }
+    }
     getTypeString(type) {
         if (type.$type === 'ReferenceType') {
             return this.getTypeString(type.referenceType);
@@ -73,6 +89,20 @@ export class U2LConverter {
         };
         attributes.push(...interfaceOrClass.attributes
             .map((prop, index) => this.convertProperty(prop, result, index)));
+        if (interfaceOrClass.generalisations.length > 0) {
+            for (const gen of interfaceOrClass.generalisations) {
+                for (const targ of gen.target) {
+                    const convertedClass = this.convertClass(targ, container, result.attributes.length);
+                    result.superTypes.push({
+                        ref: convertedClass,
+                        $refText: convertedClass.name
+                    });
+                    // for( const attr of convertedClass.attributes){
+                    //     attributes.push(attr)
+                    // }
+                }
+            }
+        }
         this.interfMap.set(result.name, result);
         this.interfArray.push(result);
         return result;
@@ -94,6 +124,21 @@ export class U2LConverter {
             name: property.name,
         };
         result.type = this.convertType(property.type, result, property.upper > 1, property.lower == 0, property.agggregation);
+        return result;
+    }
+    convertPropretyToRef(property, container, index) {
+        const result = {
+            $type: 'TypeAttribute',
+            $container: container,
+            $containerIndex: index,
+            isOptional: property.lower == 0,
+            name: property.name,
+        };
+        result.type = {
+            $container: result,
+            $type: 'ReferenceType',
+            referenceType: this.convertType(property.type, result, property.upper > 1, property.lower == 0, property.agggregation)
+        };
         return result;
     }
     /**
@@ -259,11 +304,16 @@ export class U2LConverter {
         });
         for (const [prop1, prop2] of this.propretiesArray) {
             const interfName = prop1.type.name;
-            this.interfMap.get(interfName).attributes.push(this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)); // push la property convertie en objet langium
+            this.interfMap.get(interfName).attributes.push(prop2.agggregation == AggregationKind.composite ?
+                this.convertProperty(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length) :
+                this.convertPropretyToRef(prop2, this.interfMap.get(interfName), this.interfMap.get(interfName).attributes.length)); // push la property convertie en objet langium
         }
         this.refArray.forEach(simpleType => {
-            simpleType.typeRef.ref = this.interfMap.get(simpleType.typeRef.$refText);
+            if (simpleType.typeRef) {
+                simpleType.typeRef.ref = this.interfMap.get(simpleType.typeRef.$refText);
+            }
         });
+        this.removeDuplicates(this.primitiveTypeArray);
         return grammar;
     }
 }

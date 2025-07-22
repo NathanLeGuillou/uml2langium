@@ -1,15 +1,10 @@
-grammar {{ name }}
-
-entry {{ entryRule }}
-
-
 terminal ID: /[_a-zA-Z][_a-zA-Z0-9]*/;
 {% for type in primitiveTypes %}
-    terminal {{ type.name }}: {{ type.regex }}; ############## remplacer type.regex par une fonction qui prend le type et renvoie le regex
+
+{{- getTerminal(type) | safe}}
 {% endfor %}
 
-{#
-
+{#-
 {% for iface in interfaces %}
 {{ iface.name }} return {{ iface.name -}}:
 
@@ -35,14 +30,19 @@ terminal ID: /[_a-zA-Z][_a-zA-Z0-9]*/;
     {%endfor%}
 
 {% endfor %}
-
 #}
 
-
-{%- for iface in interfaces %}
-interface {{ iface.name }} {
+{% for iface in interfaces %}
+interface {{ iface.name }}
+    {%- if iface.superTypes.length > 0 %} extends {% for superT in iface.superTypes %}
+            {%- if loop.first %}{{ superT.$refText }}
+            {%- else %}, {{ superT.$refText }}
+            {%- endif %}
+        {%- endfor %}
+    {%- endif -%}
+{
     {%- for attr in iface.attributes %}
-    {{ attr.name }}: {{ getTypeString(attr.type) -}}
+    {{ attr.name }}: {% if attr.type.$type == "ReferenceType" %}@{% endif %}{{ getTypeString(attr.type) }};
     {%- endfor %}
 }
 {% endfor %}

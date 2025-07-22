@@ -6,7 +6,9 @@ export declare class U2LConverter {
     private refArray;
     interfArray: GrammarAST.Interface[];
     primitiveTypeArray: GrammarAST.PrimitiveType[];
-    private regexMap;
+    private terminalMap;
+    getTerminal(primitiveType: GrammarAST.PrimitiveType): string;
+    removeDuplicates<T>(arr: T[], seen?: Set<T>, index?: number): void;
     getTypeString(type: GrammarAST.TypeDefinition): string;
     /**
      * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
@@ -33,6 +35,7 @@ export declare class U2LConverter {
      * @returns L’attribut Langium correspondant.
      */
     convertProperty(property: Property, container: GrammarAST.Interface, index: number): GrammarAST.TypeAttribute;
+    convertPropretyToRef(property: Property, container: GrammarAST.Interface, index: number): GrammarAST.TypeAttribute;
     /**
      * Convertit un type UML en une définition de type Langium.
      *

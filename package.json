@@ -24,5 +24,8 @@
     "langium": "^3.5.0",
     "minimist": "^1.2.8",
     "nunjucks": "^3.2.4"
+  },
+  "bin": {
+  "uml2langium": "./bin/cli.js"
   }
 }

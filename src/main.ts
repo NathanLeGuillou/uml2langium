@@ -24,3 +24,5 @@ export function converter(pathToXML: string, langiumFileLocation: string):void{
 }
 
 converter('/home/nleguillou/workspace/FSM/model.uml', 'src/langFiles/langFile.langium')
+
+// uml-to-langium generate -i '/home/nleguillou/workspace/FSM/model.uml' -o 'src/langFiles/langFileCli.langium'

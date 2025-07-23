@@ -2,18 +2,18 @@ import minimist from 'minimist';
 import { converter } from './main.js';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
-const args = minimist(process.argv.slice(2));
-const command = args._[0];
-switch (command) {
-    case 'generate': {
+export function generate() {
+    const args = minimist(process.argv.slice(2));
+    const command = args._[0];
+    if (command === 'generate') {
         const input = args.input || args.i;
         const output = args.output || args.o;
         if (!input || !output) {
-            console.error(' Usage: generate --input <uml.xmi> --output <grammar.langium>');
+            console.error(chalk.red('Usage: uml-to-langium generate --input <uml.xmi> --output <grammar.langium>'));
             process.exit(1);
         }
         if (!existsSync(input)) {
-            console.error(` Le fichier ${input} n'existe pas.`);
+            console.error(chalk.red(`Le fichier ${input} n'existe pas.`));
             process.exit(1);
         }
         try {
@@ -21,16 +21,13 @@ switch (command) {
             console.log(chalk.green(`Fichier Langium généré avec succès dans "${output}".`));
         }
         catch (e) {
-            console.error(`Erreur lors de la génération :`, e);
+            console.error(chalk.red('Erreur lors de la génération :', e));
             process.exit(1);
         }
-        break;
     }
-    case 'help':
-    default:
-        console.log(`Usage :
-  uml-to-langium generate --input <uml.xmi> --output <grammar.langium>
-  uml-to-langium help`);
-        break;
+    else {
+        console.error(chalk.red('Commande inconnue. Utilisez "generate"'));
+        process.exit(1);
+    }
 }
 //# sourceMappingURL=cli.js.map

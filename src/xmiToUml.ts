@@ -29,7 +29,6 @@ export function transformXmlIntoJObj(path: fs.PathOrFileDescriptor, fullJObj: bo
 
 type IdMap = Map<string, Struct>
 
-
 /**
  * Construit une `IdMap` à partir d'une liste d'objets `Struct`, représentant l'arbre syntaxique
  * d’un modèle UML.

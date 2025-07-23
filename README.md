@@ -1,64 +1,64 @@
 # **uml2langium**
 
-## Description du projet
+## Project Description
 
+The main goal of this project is to facilitate the automatic generation of the Langium semantic model (abstract syntax) from UML models, thereby simplifying the creation of DSLs (Domain-Specific Languages) based on existing UML diagrams.  
+Langium is a framework for building DSLs, offering automatic handling of both abstract and concrete syntax.
 
-L’objectif principal de ce projet est de faciliter la génération automatique du model sémantique Langium (syntaxe abstraite) à partir de modèles UML, simplifiant ainsi la création de DSL basés sur des diagrammes UML existants.
-Langium est un framework pour la création de langages spécifiques au domaine (DSL), incluant la gestion automatique de la syntaxe abstraite et concrète.
+## How It Works
 
-## Fonctionnement
+- The project takes a UML file exported in XMI format as input.
+- It analyzes and converts UML elements (interfaces, classes, attributes, associations, etc.) into a Langium abstract syntax representation.
+- The output is a `.langium` file describing the abstract syntax, ready to be extended with concrete syntax.
 
-- Le projet prend en entrée un fichier UML exporté au format XMI.
-- Il analyse et convertit les éléments UML (interfaces, classes, attributs, associations, etc.) en une représentation Langium de la syntaxe abstraite.
-- La sortie est un fichier Langium décrivant la syntaxe abstraite, prêt à être enrichi avec la syntaxe concrète par la suite.
+## Features
 
-## Fonctionnalités
-
-- Analyse et parsing du modèle UML  
-- Conversion des classes et interfaces UML en interfaces Langium  
-- Gestion des types primitifs UML avec mapping vers Langium  
-- Prise en charge des associations UML comme attributs dans Langium  
-- Support des énumérations UML converties en types Langium
-- Support de l'héritage (Généalisations en UMl)
-- Génération automatique du fichier de grammaire Langium  
-- Interface en ligne de commande (CLI) simple avec options d’entrée et sortie  
-- Gestion des erreurs liées aux fichiers et arguments
+- Parsing and analysis of UML models  
+- Conversion of UML classes and interfaces into Langium interfaces  
+- Mapping of UML primitive types to Langium types  
+- Support for UML associations as attributes in Langium  
+- Support for UML enumerations converted to Langium types  
+- Support for inheritance (UML generalizations)  
+- Automatic generation of the Langium grammar file  
+- Simple Command Line Interface (CLI) with input/output options  
+- Error handling for files and arguments  
 
 ## Installation
 
 <pre> 
 git clone https://github.com/NathanLeGuillou/uml2langium
-mettre la suite des instructions d'installation
+npm install
   
 </pre>
 ---
 
-### **Utilisation / Exemples**
+### **Usages / Examples**
 
 <pre> 
-uml2langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
-//ou bien
-uml2langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
+uml2langium generate --input "path/to/umlFile/fileName.uml" --output "path/to/output/fileName.langium"
+
+# or with short flags:
+uml2langium generate -i "path/to/umlFile/fileName.uml" -o "path/to/output/fileName.langium"
+
   
 </pre> 
 
-### **Technologies utilisées**
-Liste des langages, frameworks ou bibliothèques principales:
+## Technologies Used
 
-- TypeScript — langage principal pour écrire le code
+- **TypeScript** — main programming language  
 
-- Node.js — environnement d’exécution JavaScript côté serveur
+- **Node.js** — JavaScript runtime environment  
 
-- Langium — framework pour définir des langages et générer des grammaires (UML vers Langium)
+- **Langium** — framework for defining languages and generating grammars  
 
-- Nunjucks — moteur de templates pour générer le code Langium à partir des modèles
+- **Nunjucks** — template engine for generating Langium code  
 
-- Minimist — gestionnaire simple des arguments en ligne de commande (CLI)
+- **Minimist** — CLI argument parser  
 
-- Vitest — framework de tests unitaires
+- **Vitest** — unit testing framework  
 
-- Chalk — coloration des messages en console (pour les logs CLI)
+- **Chalk** — console text styling for CLI logs  
 
-- fs (File System) — module natif Node.js pour manipuler fichiers
+- **fs (File System)** — Node.js native module for file operations
 
-- XMI / UML — format d’entrée (XMI), modèle UML pour la transformation 
+- **XMI / UML** — input format (XMI), UML as the transformation source  

@@ -3,7 +3,31 @@ import { converter } from './main.js';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
 
-export function generate() {
+/**
+ * @function generate
+ * @description
+ * Cette fonction analyse les arguments de ligne de commande et exécute la commande `generate`.
+ * Elle attend en entrée un fichier UML au format XMI (`--input` ou `-i`) et un chemin de sortie Langium (`--output` ou `-o`).
+ * Si les arguments sont valides, elle appelle la fonction `converter` pour générer un fichier Langium à partir du fichier UML fourni.
+ *
+ * @usage
+ * ```bash
+ * uml-to-langium generate --input chemin/vers/mon.uml.xmi --output chemin/vers/ma.grammar.langium
+ * ```
+ *
+ * @throws
+ * - Affiche un message d'erreur si les arguments sont manquants ou invalides.
+ * - Affiche une erreur si le fichier UML spécifié n'existe pas.
+ * - Affiche toute erreur survenue pendant l'exécution de la conversion.
+ *
+ * @dependencies
+ * - minimist : pour parser les arguments de la ligne de commande
+ * - fs.existsSync : pour vérifier l'existence du fichier d'entrée
+ * - chalk : pour afficher des messages colorés dans le terminal
+ * - converter : fonction d'import qui réalise la transformation UML → Langium
+ */
+
+export function generate():void {
   const args = minimist(process.argv.slice(2));
   const command = args._[0];
 

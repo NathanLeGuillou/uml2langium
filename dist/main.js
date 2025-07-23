@@ -17,6 +17,4 @@ export function converter(pathToXML, langiumFileLocation) {
     const grammarTemplate = nunjucks.render('src/grammarTemplate.njk', contexte);
     writeFileSync(langiumFileLocation, grammarTemplate);
 }
-converter('/home/nleguillou/workspace/FSM/model.uml', 'src/langFiles/langFile.langium');
-// uml-to-langium generate -i '/home/nleguillou/workspace/FSM/model.uml' -o 'src/langFiles/langFileCli.langium'
 //# sourceMappingURL=main.js.map

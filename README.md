@@ -13,7 +13,7 @@ L’objectif principal est de faciliter la génération automatique de la syntax
 - La sortie est un fichier Langium décrivant la syntaxe abstraite, prêt à être enrichi avec la syntaxe concrète par la suite.
 
 ## Fonctionnalités
-- Importation de modèles UML au format XMI  
+
 - Analyse et parsing du modèle UML  
 - Conversion des classes et interfaces UML en interfaces Langium  
 - Gestion des types primitifs UML avec mapping vers Langium  
@@ -22,7 +22,6 @@ L’objectif principal est de faciliter la génération automatique de la syntax
 - Génération automatique du fichier de grammaire Langium  
 - Interface en ligne de commande (CLI) simple avec options d’entrée et sortie  
 - Gestion des erreurs liées aux fichiers et arguments  
-- Extensible pour ajouter des règles ou types supplémentaires
 
 ## Installation
 
@@ -55,7 +54,7 @@ Liste des langages, frameworks ou bibliothèques principales:
 
 - Minimist — gestionnaire simple des arguments en ligne de commande (CLI)
 
-- Jest (ou autre framework de test si applicable) — framework de tests unitaires
+- Vitest — framework de tests unitaires
 
 - Chalk — coloration des messages en console (pour les logs CLI)
 

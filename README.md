@@ -2,9 +2,9 @@
 
 ## Description du projet
 
-Ce projet propose un outil de conversion qui transforme des modèles **UML** (au format XMI) en syntaxe abstraite **Langium**. Langium est un framework pour la création de langages spécifiques au domaine (DSL), incluant la gestion automatique de la syntaxe abstraite et concrète.
 
-L’objectif principal est de faciliter la génération automatique de la syntaxe abstraite Langium à partir de modèles UML, simplifiant ainsi la création de DSLs basés sur des diagrammes UML existants.
+L’objectif principal de ce projet est de faciliter la génération automatique du model sémantique Langium (syntaxe abstraite) à partir de modèles UML, simplifiant ainsi la création de DSL basés sur des diagrammes UML existants.
+Langium est un framework pour la création de langages spécifiques au domaine (DSL), incluant la gestion automatique de la syntaxe abstraite et concrète.
 
 ## Fonctionnement
 
@@ -18,10 +18,11 @@ L’objectif principal est de faciliter la génération automatique de la syntax
 - Conversion des classes et interfaces UML en interfaces Langium  
 - Gestion des types primitifs UML avec mapping vers Langium  
 - Prise en charge des associations UML comme attributs dans Langium  
-- Support des énumérations UML converties en types Langium  
+- Support des énumérations UML converties en types Langium
+- Support de l'héritage (Généalisations en UMl)
 - Génération automatique du fichier de grammaire Langium  
 - Interface en ligne de commande (CLI) simple avec options d’entrée et sortie  
-- Gestion des erreurs liées aux fichiers et arguments  
+- Gestion des erreurs liées aux fichiers et arguments
 
 ## Installation
 
@@ -35,9 +36,9 @@ mettre la suite des instructions d'installation
 ### **Utilisation / Exemples**
 
 <pre> 
-uml-to-langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
+uml2langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
 //ou bien
-uml-to-langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
+uml2langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
   
 </pre> 
 

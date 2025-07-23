@@ -27,7 +27,7 @@ L’objectif principal est de faciliter la génération automatique de la syntax
 ## Installation
 
 <pre> 
-git clone https://github.com/ton-pseudo/nom-du-projet.git
+git clone https://github.com/NathanLeGuillou/uml2langium
 mettre la suite des instructions d'installation
   
 </pre>

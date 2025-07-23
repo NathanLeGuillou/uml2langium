@@ -39,7 +39,6 @@ uml2langium generate --input "path/to/umlFile/fileName.uml" --output "path/to/ou
 
 # or with short flags:
 uml2langium generate -i "path/to/umlFile/fileName.uml" -o "path/to/output/fileName.langium"
-
   
 </pre> 
 

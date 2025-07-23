@@ -33,7 +33,7 @@ npm install
 </pre>
 ---
 
-### **Utilisation / Exemples**
+## **Utilisation / Exemples**
 
 <pre> 
 uml2langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
@@ -42,7 +42,7 @@ uml2langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEnd
   
 </pre> 
 
-### **Technologies utilisées**
+## **Technologies utilisées**
 Liste des langages, frameworks ou bibliothèques principales:
 
 - TypeScript — langage principal pour écrire le code

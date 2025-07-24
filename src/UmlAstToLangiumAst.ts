@@ -1,13 +1,13 @@
 import { Interface, Class, VisibilityKind, DataType, Generalization, Element, NamedElement, Property, Expression, Association, Classifier, AggregationKind, Type, PrimitiveType, isClass, isDataType, isPrimitiveType, isInterface, isEnumeration, isAssociation, TypedElement, MultiplicityElement, Enumeration } from './umlMetamodel.js'
-import {DefaultReferences, GrammarAST} from 'langium'
-import { classConverter } from './xmiToUml.js'
-import { UnionType } from 'langium/grammar'
+import {GrammarAST} from 'langium'
+
 
 export class U2LConverter{
 
     private interfMap = new Map<string, GrammarAST.Interface>
     private propretiesArray = new Array<[Property, Property]>
-    private refArray = new Array<GrammarAST.SimpleType>
+    private refArraySimpleType = new Array<GrammarAST.SimpleType>
+    private generalisationMap = new Map<string, string>
 
     public interfArray = new Array<GrammarAST.Interface>
     public primitiveTypeArray = new Array<GrammarAST.PrimitiveType>
@@ -138,11 +138,12 @@ export class U2LConverter{
             
             for(const gen of interfaceOrClass.generalisations){
                 for(const targ of gen.target as Class[]){
-                    const convertedClass = this.convertClass(targ, container, result.attributes.length)
+                    //! const convertedClass = this.convertClass(targ, container, result.attributes.length)
                     result.superTypes.push({
-                        ref: convertedClass,
-                        $refText: convertedClass.name
+                        //! ref: convertedClass,
+                        $refText: targ.name
                     })
+                    this.generalisationMap.set(result.name, targ.name)
                 }
             }
         }
@@ -316,7 +317,7 @@ export class U2LConverter{
                 $refText: type.name
             }
         }
-        this.refArray.push(result)
+        this.refArraySimpleType.push(result)
         return result
 
     }
@@ -446,7 +447,16 @@ export class U2LConverter{
             ) // push the property converted in langium objet 
             
         }
-        this.refArray.forEach(simpleType => {
+        for (const [key, value] of this.generalisationMap){
+            const ifaceSuperTypes = this.interfMap.get(key).superTypes
+            for(let type of ifaceSuperTypes){
+                type = {
+                    ref: this.interfMap.get(type.$refText),
+                    $refText: type.$refText
+                }
+            }
+        }
+        this.refArraySimpleType.forEach(simpleType => {
             if(simpleType.typeRef){
                 (simpleType.typeRef as any).ref = this.interfMap.get(simpleType.typeRef.$refText)
         }

@@ -2,17 +2,17 @@ import fs from "fs";
 import { VisibilityKind, AggregationKind } from './umlMetamodel.js';
 import { XMLParser } from "fast-xml-parser";
 /**
- * Transforme un fichier XML UML (généralement au format XMI) en un objet JavaScript.
+ * Transforms a UML XML file (usually in XMI format) into a JavaScript object.
  *
- * - Si `fullJObj` est `true`, la fonction renvoie l’objet JSON complet résultant du parsing XML.
- * - Sinon, elle retourne uniquement le tableau des éléments contenus dans `uml:Model.packagedElement`,
- *   ce qui est utile pour accéder directement aux classes, associations, etc.
+ * - If `fullJObj` is `true`, the function returns the full parsed XML JSON object.
+ * - Otherwise, it returns only the array of elements under `uml:Model.packagedElement`,
+ *   which is useful to directly access classes, associations, etc.
  *
- * @param path - Chemin vers le fichier XML à parser (peut être un string ou un descripteur de fichier).
- * @param fullJObj - Si `true`, retourne l'objet JSON complet. Sinon, retourne `uml:Model.packagedElement` (par défaut `false`).
- * @returns L'objet JSON complet ou juste les éléments UML contenus dans `packagedElement`.
+ * @param path - Path to the XML file to parse (can be a string or file descriptor).
+ * @param fullJObj - If `true`, returns the full JSON object. Otherwise, returns `uml:Model.packagedElement` (default is `false`).
+ * @returns The full JSON object or just the UML elements in `packagedElement`.
  *
- * @throws {Error} En cas d’échec de lecture du fichier ou d’erreur de parsing XML.
+ * @throws {Error} If the file reading or XML parsing fails.
  */
 export function transformXmlIntoJObj(path, fullJObj = false) {
     const xmlFile = fs.readFileSync(path, 'utf-8');
@@ -24,43 +24,27 @@ export function transformXmlIntoJObj(path, fullJObj = false) {
     return fullJObj ? parser.parse(xmlFile) : parser.parse(xmlFile)['uml:Model']['packagedElement'];
 }
 /**
- * Construit une `IdMap` à partir d'une liste d'objets `Struct`, représentant l'arbre syntaxique
- * d’un modèle UML.
+ * Builds an `IdMap` from a list of `Struct` objects, representing the abstract syntax tree
+ * of a UML model.
  *
- * Cette map associe chaque identifiant (`@_xmi:id`) à l’objet `Struct` correspondant.
+ * This map links each identifier (`@_xmi:id`) to its corresponding `Struct` object.
  *
- * @param ast - Tableau d’objets `Struct`, représentant le modèle UML brut.
- * @returns Une `Map` dont chaque clé est un identifiant d'objet, et la valeur un `Struct` représentant cet objet UML.
+ * @param ast - Array of `Struct` objects representing the raw UML model.
+ * @returns A `Map` where each key is an object ID and the value is its corresponding UML `Struct`.
  */
 export function createIdMap(ast) {
     let idMap = new Map();
     fillIdMap(ast, idMap);
     return idMap;
 }
-function primitiveTypeConverter(primitiveTypeAst) {
-    return {
-        $type: "PrimitiveType",
-        name: primitiveTypeAst['@_name'],
-        visibility: visibility(primitiveTypeAst['@_visibility']),
-        owner: undefined,
-        ownedElement: [],
-        member: undefined,
-        isAbstract: false,
-        inheritedMember: [],
-        feature: [],
-        generalisations: [],
-        general: undefined,
-        attributes: [],
-    };
-}
 /**
- * Remplit récursivement une `IdMap` à partir d’une structure JSON (issue d’un parsing XMI).
+ * Recursively fills an `IdMap` from a JSON structure (parsed from XMI).
  *
- * Cette fonction explore tous les nœuds (y compris imbriqués) à la recherche d’un champ `@_xmi:id`
- * et les associe à leur `Struct` dans la map.
+ * This function explores all nodes (including nested ones) looking for a `@_xmi:id` field,
+ * and maps them to their corresponding `Struct` in the map.
  *
- * @param struct - Objet ou tableau JSON à parcourir.
- * @param idMap - Map dans laquelle seront ajoutés les éléments identifiés.
+ * @param struct - JSON object or array to traverse.
+ * @param idMap - Map where identified elements will be added.
  */
 function fillIdMap(struct, idMap) {
     if (struct === null || typeof struct !== "object") {
@@ -83,13 +67,38 @@ function fillIdMap(struct, idMap) {
     }
 }
 /**
- * Convertit une chaîne de caractères représentant une visibilité UML en une valeur du type `VisibilityKind`.
+ * Converts a JSON object representing a UML primitive type into a `PrimitiveType` instance.
  *
- * Si la chaîne n’est pas reconnue parmi les valeurs valides (`'package'`, `'private'`, `'protected'`),
- * la fonction retourne `VisibilityKind.public` par défaut.
+ * Initializes fields not specified in the original JSON with default values
+ * (`undefined`, empty arrays...).
  *
- * @param visib - La chaîne représentant la visibilité (par exemple : `"private"`, `"protected"`...).
- * @returns La valeur correspondante du type `VisibilityKind`.
+ * @param primitiveTypeAst - JSON `Struct` describing the UML primitive type.
+ * @returns A `PrimitiveType` instance conforming to the metamodel.
+ */
+function primitiveTypeConverter(primitiveTypeAst) {
+    return {
+        $type: "PrimitiveType",
+        name: primitiveTypeAst['@_name'],
+        visibility: visibility(primitiveTypeAst['@_visibility']),
+        owner: undefined,
+        ownedElement: [],
+        member: undefined,
+        isAbstract: false,
+        inheritedMember: [],
+        feature: [],
+        generalisations: [],
+        general: undefined,
+        attributes: [],
+    };
+}
+/**
+ * Converts a string representing UML visibility into a `VisibilityKind` value.
+ *
+ * If the string is not recognized (`'package'`, `'private'`, `'protected'`),
+ * the function defaults to `VisibilityKind.public`.
+ *
+ * @param visib - The visibility string (e.g., "private", "protected"...).
+ * @returns The corresponding `VisibilityKind` value.
  */
 export function visibility(visib) {
     if (visib === 'package') {
@@ -106,15 +115,13 @@ export function visibility(visib) {
     }
 }
 /**
- * Convertit un objet JSON (issu du parsing XMI) représentant un DataType UML
- * en une instance du type `DataType` du méta-modèle.
+ * Converts a JSON object representing a UML `DataType` into a `DataType` instance.
  *
- * Ce convertisseur extrait les attributs essentiels du `Struct` JSON, comme le nom
- * et la visibilité, et initialise les propriétés UML non encore renseignées
- * (héritage, membres, attributs...) avec des valeurs par défaut (null ou tableaux vides).
+ * This converter extracts key attributes such as name and visibility, and initializes
+ * UML properties not set in the JSON with default values (null or empty arrays).
  *
- * @param dataTypeAst
- * @returns
+ * @param dataTypeAst - The JSON object representing a UML `DataType`.
+ * @returns A `DataType` instance conforming to the metamodel.
  */
 export function dataTypeConverter(dataTypeAst) {
     const dType = {
@@ -134,18 +141,19 @@ export function dataTypeConverter(dataTypeAst) {
     return dType;
 }
 /**
- * Convertit un nœud JSON représentant un type UML en une instance de `Type` du métamodèle interne.
+ * Converts a JSON node representing a UML type into a `Type` instance from the internal metamodel.
  *
- * La fonction détecte le type UML via `@_xmi:type` :
- * - `"uml:Class"` → via `classConverter`
- * - `"uml:Association"` → via `associationConverter`
- * - `"uml:DataType"` → via `dataTypeConverter`
+ * The function detects the UML type using `@_xmi:type`:
+ * - "uml:Class" → via `classConverter`
+ * - "uml:Association" → via `associationConverter`
+ * - "uml:DataType" → via `dataTypeConverter`
+ * - "uml:PrimitiveType" → via `primitiveTypeConverter`
  *
- * @param typeAst - Objet `Struct` représentant un type UML.
- * @param IDs - Map d'identifiants (`IdMap`) pour résoudre les références.
- * @returns Une instance concrète de `Type` (`Class`, `Association`, `DataType`, etc.).
+ * @param typeAst - `Struct` object representing a UML type.
+ * @param IDs - Identifier map (`IdMap`) to resolve references.
+ * @returns A concrete `Type` instance (`Class`, `Association`, `DataType`, etc.).
  *
- * @throws Une erreur si le type UML n’est pas reconnu.
+ * @throws An error if the UML type is not recognized.
  */
 export function typeConverter(typeAst, IDs) {
     if (typeAst['@_xmi:type'] == 'uml:Association') {
@@ -166,15 +174,16 @@ export function typeConverter(typeAst, IDs) {
     }
 }
 /**
- * Convertit un objet JSON représentant une propriété UML en une instance de `Property`.
+ * Converts a JSON object representing a UML property into a `Property` instance.
  *
- * Résout le type de la propriété via `typeConverter`, et prend en compte les cardinalités
- * (`lowerValue`, `upperValue`) et la visibilité.
+ * Resolves the property's type via `typeConverter`, and handles cardinalities
+ * (`lowerValue`, `upperValue`) and visibility.
+ * If the upper bound is `"*"`, it is represented by the value 2 to indicate multiplicity.
  *
- * @param propretyAst - Objet JSON de type `Struct`, représentant une propriété UML.
- * @param IDs - Map des éléments (`IdMap`) pour résoudre les types référencés.
- * @param association - (Optionnel) Objet `Association` auquel rattacher cette propriété.
- * @returns Une instance typée `Property`.
+ * @param propretyAst - JSON `Struct` object representing a UML property.
+ * @param IDs - Map of elements (`IdMap`) for resolving referenced types.
+ * @param association - (Optional) `Association` object to link this property to.
+ * @returns A typed `Property` instance.
  */
 export function propretyConverter(propretyAst, IDs, association = {}) {
     const convertedProperty = {
@@ -197,17 +206,17 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
     return convertedProperty;
 }
 /**
- * Convertit une instance de classe UML issue d’un AST JSON (souvent extrait d’un modèle XMI)
- * en un objet `Class` conforme au métamodèle UML.
+ * Converts a UML class instance from a JSON AST (often extracted from an XMI model)
+ * into a `Class` object conforming to the UML metamodel.
  *
- * Cette fonction récupère le nom, la visibilité, les attributs et autres propriétés UML
- * de la classe, et les structure dans un objet `Class`. Elle prend également en compte
- * les attributs internes via la clé `ownedAttribute` du JSON.
+ * This function retrieves the class name, visibility, attributes, and other UML properties,
+ * and structures them into a `Class` object. It also processes internal attributes via `ownedAttribute`,
+ * and manages inheritance via `generalization`.
  *
- * @param classAst - L'objet JSON représentant une classe UML.
- * @param IDs - La map d'identifiants (`IdMap`) associant chaque ID à ses métadonnées utiles.
+ * @param classAst - The JSON object representing a UML class.
+ * @param IDs - The `IdMap` linking each ID to its metadata.
  *
- * @returns Une instance de `Class` correctement construite.
+ * @returns A properly constructed `Class` instance.
  */
 export function classConverter(classAst, IDs) {
     const convertedClass = {
@@ -243,6 +252,15 @@ export function classConverter(classAst, IDs) {
     }
     return convertedClass;
 }
+/**
+ * Converts a JSON object representing a UML enumeration into an `Enumeration` instance.
+ *
+ * This function creates an `Enumeration` object by extracting its literals via `ownedLiteral`,
+ * and converting them into `EnumerationLitteral` objects.
+ *
+ * @param enumAst - UML JSON object with enumeration info.
+ * @returns The instantiated `Enumeration` object.
+ */
 function enumConverter(enumAst) {
     const enumeration = {
         $type: "Enumeration",
@@ -271,6 +289,15 @@ function enumConverter(enumAst) {
     }
     return enumeration;
 }
+/**
+ * Converts a UML generalization relationship JSON object into a typed `Generalization` instance.
+ *
+ * The generalization target (`@_general`) is resolved and converted into a UML class.
+ *
+ * @param genAst - JSON object representing the generalization.
+ * @param Ids - Map for resolving the `@_general` identifier.
+ * @returns The corresponding `Generalization` object.
+ */
 function generalisationConverter(genAst, Ids) {
     const result = {
         $type: "Generalization",
@@ -291,14 +318,14 @@ function generalisationConverter(genAst, Ids) {
     return result;
 }
 /**
- * Convertit un objet JSON (`Struct`) représentant une association UML en une instance `Association`.
+ * Converts a JSON `Struct` object representing a UML association into an `Association` instance.
  *
- * La fonction extrait les extrémités (`ownedEnd`) et les convertit en propriétés UML.
- * Elle traite également les extrémités navigables (`@_navigableOwnedEnd`) sous forme de string.
+ * The function extracts the association ends (`ownedEnd`) and converts them into UML properties.
+ * It also handles navigable ends (`@_navigableOwnedEnd`) as a space-separated string.
  *
- * @param associationAst - L'objet JSON décrivant l’association.
- * @param IDs - La map `IdMap` des objets UML, utilisée pour la résolution des types.
- * @returns Une instance `Association`.
+ * @param associationAst - JSON object describing the association.
+ * @param IDs - The `IdMap` of UML objects, used to resolve types.
+ * @returns An `Association` instance.
  */
 function associationConverter(associationAst, IDs) {
     const convertedAssociation = {
@@ -341,17 +368,17 @@ function associationConverter(associationAst, IDs) {
     return convertedAssociation;
 }
 /**
- * Convertit une liste d'éléments UML représentés en JSON (typiquement extraits d’un fichier XMI)
- * en une liste d’objets `Element` correspondant au métamodèle interne.
+ * Converts a list of UML elements represented as JSON (typically extracted from an XMI file)
+ * into a list of `Element` objects corresponding to the internal metamodel.
  *
- * Cette fonction identifie dynamiquement le type UML (`uml:Class`, `uml:DataType`, `uml:Association`)
- * et applique le convertisseur spécifique à chacun. Elle utilise également un `IdMap` pour centraliser
- * les métadonnées nécessaires aux conversions.
+ * This function dynamically identifies the UML type (`uml:Class`, `uml:DataType`, `uml:Association`, etc.)
+ * and applies the appropriate converter for each. It also uses an `IdMap` to centralize
+ * the metadata needed for conversions.
  *
- * @param ast - Un tableau de structures JSON représentant des éléments UML à convertir.
- * @returns Un tableau d'objets `Element` conformes au métamodèle interne.
+ * @param ast - Array of JSON structures representing UML elements to convert.
+ * @returns An array of `Element` objects conforming to the internal metamodel.
  *
- * @throws Une erreur si un type UML n’est pas reconnu ou non pris en charge.
+ * @throws An error if a UML type is unrecognized or unsupported.
  */
 export function xmi2Umlconverter(ast) {
     let model = [];

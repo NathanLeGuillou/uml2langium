@@ -44,3 +44,5 @@ export function converter(pathToXML: string, langiumFileLocation: string):void{
 
   writeFileSync(langiumFileLocation, grammarTemplate)
 }
+
+converter('/home/nleguillou/workspace/FSM/model.uml', 'src/langFiles/langFileCli.langium')

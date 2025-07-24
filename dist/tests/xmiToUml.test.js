@@ -7,7 +7,7 @@ import * as umlModel from '../umlMetamodel.js';
 //     expect(valeur).toBe(ceQuOnAttend)
 //   })
 // })
-const jObjTest = xmi2Uml.transformXmlIntoJObj('./src/fsmModel.uml');
+const jObjTest = xmi2Uml.transformXmlIntoJObj('src/tests/umlModels /fsmModel.uml');
 const IDs = xmi2Uml.createIdMap(jObjTest);
 describe("Fonction visibility", () => {
     it("devrait retourner package", () => {

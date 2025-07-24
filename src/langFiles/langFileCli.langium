@@ -15,10 +15,12 @@ interface FSM {
 interface State {
     name: string;
     final: boolean;
+    transitions: Transition[];
 }
 
 interface Transition {
     name: string;
+    state: @State;
 }
 
 interface SubState extends State, Transition {

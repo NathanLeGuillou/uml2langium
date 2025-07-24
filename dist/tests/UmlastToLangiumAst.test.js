@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as xmi2Uml from '../xmiToUml.js';
 import { U2LConverter } from '../UmlAstToLangiumAst.js';
 import * as umlModel from '../umlMetamodel.js';
-const jObj = xmi2Uml.transformXmlIntoJObj('./umlModels/fsmModel.uml');
+const jObj = xmi2Uml.transformXmlIntoJObj('src/tests/umlModels /fsmModel.uml');
 const IDs = xmi2Uml.createIdMap(jObj);
 const umlModelConverted = xmi2Uml.xmi2Umlconverter(jObj);
 const converter = new U2LConverter();

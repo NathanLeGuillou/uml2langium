@@ -3,120 +3,187 @@ import { GrammarAST } from 'langium';
 export declare class U2LConverter {
     private interfMap;
     private propretiesArray;
-    private refArray;
+    private refArraySimpleType;
+    private generalisationMap;
     interfArray: GrammarAST.Interface[];
     primitiveTypeArray: GrammarAST.PrimitiveType[];
     enumArray: GrammarAST.UnionType[];
     private terminalMap;
+    /**
+     * @method getTerminal
+     * Returns the Langium terminal declaration for a given primitive type.
+     * The declaration is stored in `terminalMap`.
+     *
+     * @param primitiveType - Langium primitive type.
+     * @returns A string representing the corresponding terminal declaration.
+     */
     getTerminal(primitiveType: GrammarAST.PrimitiveType): string;
+    /**
+     * @method removeDuplicates
+     * Recursively removes duplicates from an array in-place.
+     * Checks each element and removes it if already seen.
+     *
+     * @param arr - Array containing the elements.
+     * @param seen - Set of already encountered elements (defaults to empty).
+     * @param index - Current index (defaults to 0).
+     */
     removeDuplicates<T>(arr: T[], seen?: Set<T>, index?: number): void;
+    /**
+     * @method getTypeString
+     * Reconstructs a textual representation of a Langium type.
+     * Uses recursion to handle nested types like Array or Reference.
+     *
+     * @param type - Langium type definition.
+     * @returns A string representation of the type.
+     */
     getTypeString(type: GrammarAST.TypeDefinition): string;
     /**
-     * Convertit un type primitif UML (PrimitiveType) en un type primitif Langium.
+     * @method convertPrimitiveTypes
+     * Maps UML primitive type names to Langium primitive types.
+     * Recognized types are added to `primitiveTypeArray` for later use.
      *
-     * @param primitiveType - Le type primitif UML à convertir.
-     * @returns Le type primitif Langium correspondant, ou `undefined` si non reconnu.
+     * @param primitiveType - UML primitive type.
+     * @returns The corresponding Langium type, or `undefined` if unrecognized.
      */
     convertPrimitiveTypes(primitiveType: PrimitiveType): GrammarAST.PrimitiveType | undefined;
     /**
-     * Convertit une classe ou une interface UML en une interface Langium.
+     * @method convertClass
+     * Transforms a UML class or interface into a Langium Interface.
+     * Assigns UML attributes and recursively handles generalizations.
      *
-     * @param interfaceOrClass - L’élément UML de type Interface ou Class à convertir.
-     * @param container - Le conteneur Grammar AST.
-     * @param containerIndex - L'index de l'élément dans le conteneur.
-     * @returns L’interface Langium générée.
+     * @param interfaceOrClass - UML element (Class or Interface).
+     * @param container - Langium grammar container.
+     * @param containerIndex - Index of the element within `Grammar.interfaces`.
+     * @returns A Langium Interface object.
      */
     convertClass(interfaceOrClass: Interface | Class, container: GrammarAST.Grammar, containerIndex: number): GrammarAST.Interface;
     /**
-     * Convertit une propriété UML en attribut Langium.
+     * @method convertProperty
+     * Converts a UML property into a typed Langium attribute (`TypeAttribute`).
+     * Uses `convertType` to determine the type and builds the attribute object.
      *
-     * @param property - L'objet UML Property à convertir.
-     * @param container - Le conteneur Langium (Interface).
-     * @param index - L'index de la propriété dans la liste.
-     * @returns L’attribut Langium correspondant.
+     * @param property - UML source property.
+     * @param container - Target Langium Interface.
+     * @param index - Position within the container.
+     * @returns The generated Langium TypeAttribute.
      */
     convertProperty(property: Property, container: GrammarAST.Interface, index: number): GrammarAST.TypeAttribute;
+    /**
+     * @method convertPropretyToRef
+     * Produces a Langium attribute whose type is a reference (`ReferenceType`).
+     * Used for navigable UML properties.
+     *
+     * @param property - UML property.
+     * @param container - Langium Interface.
+     * @param index - Index of the property.
+     * @returns A TypeAttribute with a ReferenceType.
+     */
     convertPropretyToRef(property: Property, container: GrammarAST.Interface, index: number): GrammarAST.TypeAttribute;
     /**
-     * Convertit un type UML en une définition de type Langium.
+     * @method convertType
+     * Dynamically determines the Langium type to generate based on UML properties.
+     * Redirects to `convert2ArrayType`, `convert2ReferenceType`, or `convert2SimpleType`.
      *
-     * @param type - Le type UML à convertir.
-     * @param container - Le conteneur Langium dans lequel le type sera inséré.
-     * @param isArray - Indique si le type est un tableau.
-     * @param isOptional - Indique si le type est optionnel.
-     * @param aggregationKind - Le type d’agrégation UML.
-     * @param index - L'index optionnel du type dans son conteneur.
-     * @returns Un objet TypeDefinition Langium.
+     * @param type - UML type.
+     * @param container - Parent Langium element.
+     * @param isArray - Whether the type should be an array.
+     * @param isOptional - Whether the type is optional.
+     * @param aggregationKind - UML aggregation kind.
+     * @param index - Optional container index.
+     * @returns A Langium TypeDefinition.
      */
     convertType(type: Type, container: GrammarAST.ArrayType | GrammarAST.ReferenceType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isArray: boolean, isOptional: boolean, aggregationKind: AggregationKind, index?: number): GrammarAST.TypeDefinition;
     /**
-    * Convertit un type UML en `AbstractType` Langium (`Interface` ou `Type`) vide.
-    *
-    * Ce type abstrait est utilisé pour représenter un type cible dans une action.
-    * Il est simplifié (sans attributs ni superTypes) et déduit dynamiquement.
-    *
-    * @param type - Le type UML à convertir.
-    * @param container - L’élément Langium parent (`Action`).
-    * @param isArray - Non utilisé ici.
-    * @param isOptional - Non utilisé ici.
-    * @param aggregationKind - Non utilisé ici.
-    * @param index - Position dans le conteneur.
-    * @returns Un objet `AbstractType` Langium (`Interface` ou `Type`).
-    */
+     * @method convert2AbstractType
+     * Transforms a UML type into an abstract Langium type (Interface or Type).
+     * Does not include attributes; used in Langium actions.
+     *
+     * @param type - UML type.
+     * @param container - Langium Action.
+     * @param isArray - Not used.
+     * @param isOptional - Not used.
+     * @param aggregationKind - Not used.
+     * @param index - Position in the container.
+     * @returns A Langium AbstractType.
+     */
     convert2AbstractType(type: Type, container: GrammarAST.Action, isArray: boolean, isOptional: boolean, aggregationKind: AggregationKind, index?: number): GrammarAST.AbstractType;
     /**
-     * le premier types dans types est le nom de l'enumeration, le reste sont ses éléments
-     * @param enumeration
-     * @param container
-     * @returns
+     * @method convertEnum
+     * Builds a Langium `UnionType` from a UML enumeration.
+     * The first type is the enumeration name, followed by its literals.
+     *
+     * @param enumeration - UML Enum.
+     * @param container - Langium container.
+     * @returns A Langium UnionType.
      */
     convertEnum(enumeration: Enumeration, container?: GrammarAST.TypeAttribute | GrammarAST.ArrayType | GrammarAST.ReferenceType | GrammarAST.UnionType | GrammarAST.Type): GrammarAST.UnionType;
     /**
-    * Convertit un type UML en `SimpleType` Langium, principalement utilisé pour les types primitifs.
-    *
-    * Si le type est un `PrimitiveType`, il est converti en type primitif Langium.
-    * Sinon, le champ `primitiveType` sera `undefined`.
-    *
-    * @param type - Le type UML à convertir.
-    * @param container - L’élément Langium parent.
-    * @param isOptional - Indique si le type est optionnel (non utilisé actuellement).
-    * @param index - Position dans le conteneur.
-    * @returns Un objet `SimpleType` Langium.
-    */
+     * @method convert2SimpleType
+     * Converts a UML Type to a Langium SimpleType.
+     * If it's a `PrimitiveType`, sets `primitiveType`; otherwise, sets `typeRef`.
+     * The generated SimpleType is added to `refArray`.
+     *
+     * @param type - UML type.
+     * @param container - Langium container.
+     * @param isOptional - Not used here.
+     * @param index - Optional position.
+     * @param ref - Optional external reference.
+     * @returns A Langium SimpleType.
+     */
     convert2SimpleType(type: Type, container: GrammarAST.ReferenceType | GrammarAST.ArrayType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isOptional: boolean, index?: number, ref?: string): GrammarAST.SimpleType;
     /**
-     * Convertit un type UML en ReferenceType Langium (référence à un autre type).
+     * @method convert2ReferenceType
+     * Returns a Langium `ReferenceType` pointing to a SimpleType.
+     * Used for associations or referenced types.
      *
-     * @param type - Le type UML.
-     * @param container - Le conteneur Langium.
-     * @param isOptional - Si la référence est optionnelle.
-     * @param aggregationKind - Le type d’agrégation.
-     * @param index - Index dans le conteneur.
-     * @returns Un objet ReferenceType Langium.
+     * @param type - UML type.
+     * @param container - Langium container.
+     * @param isOptional - Whether the type is optional.
+     * @param aggregationKind - UML aggregation kind.
+     * @param index - Optional position.
+     * @returns A Langium ReferenceType.
      */
     convert2ReferenceType(type: Type, container: GrammarAST.ReferenceType | GrammarAST.ArrayType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isOptional: boolean, aggregationKind: AggregationKind, index?: number): GrammarAST.ReferenceType;
     /**
-     * Convertit un type UML en ArrayType Langium.
+     * @method convert2ArrayType
+     * Creates a Langium `ArrayType` wrapping the inner type.
+     * Recursively uses `convertType` to process inner types.
      *
-     * @param type - Le type UML.
-     * @param container - Le conteneur Langium.
-     * @param isOptional - Si les éléments sont optionnels.
-     * @param aggregationKind - Type d’agrégation UML.
-     * @param index - Index dans le conteneur.
-     * @returns Un objet ArrayType Langium.
+     * @param type - UML type.
+     * @param container - Langium container.
+     * @param isOptional - Whether elements can be absent.
+     * @param aggregationKind - UML aggregation kind.
+     * @param index - Optional position.
+     * @returns A Langium ArrayType.
      */
     convert2ArrayType(type: Type, container: GrammarAST.ArrayType | GrammarAST.ReferenceType | GrammarAST.Type | GrammarAST.TypeAttribute | GrammarAST.UnionType, isOptional: boolean, aggregationKind: AggregationKind, index?: number): GrammarAST.ArrayType;
+    /**
+     * @method isReference
+     * Checks whether the UML type is a reference to a class, interface, or enum.
+     *
+     * @param type - UML type.
+     * @returns `true` if it's a reference, otherwise `false`.
+     */
     isReference(type: Type): boolean;
+    /**
+     * @method property2Attribute
+     * Converts and adds a UML property as an attribute to a Langium Interface.
+     *
+     * @param prop - UML property.
+     * @param parent - Target Langium Interface.
+     */
     property2Attribute(prop: Property, parent: GrammarAST.Interface): void;
     /**
-    * Convertit un ensemble d’éléments UML (`NamedElement[]`) en un objet `Grammar` Langium.
-    *
-    * Les `Class` et `Interface` UML sont converties en interfaces Langium.
-    * Les `Association` UML sont analysées pour générer des propriétés navigables entre types.
-    *
-    * @param elems - Liste des éléments UML (classes, interfaces, associations).
-    * @returns Un objet `Grammar` contenant les interfaces Langium correspondantes.
-    * @throws Erreur si une association UML possède un nombre de `navigableOwnedEnd` non supporté.
-    */
+     * @method convertModel
+     * Transforms a list of UML elements (`NamedElement[]`) into a Langium grammar.
+     * Handles:
+     * - Classes/interfaces via `convertClass`
+     * - Bidirectional and unidirectional associations
+     * - Enumerations via `convertEnum`
+     * Also reconstructs references and removes duplicates.
+     *
+     * @param elems - UML elements to convert.
+     * @returns The resulting Langium Grammar object.
+     */
     convertModel(elems: NamedElement[]): GrammarAST.Grammar;
 }

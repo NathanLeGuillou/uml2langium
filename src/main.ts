@@ -2,29 +2,29 @@ import {writeFileSync} from 'fs'
 import {U2LConverter} from './UmlAstToLangiumAst.js'
 import { transformXmlIntoJObj, xmi2Umlconverter } from './xmiToUml.js'
 import nunjucks from 'nunjucks'
+
 /**
  * @function converter
  * @description
- * Transforme un fichier UML au format XMI en une grammaire Langium à l'aide d'une chaîne de conversions successives :
- * - Parsing XML en objet JSON
- * - Transformation XMI en modèle UML
- * - Conversion UML en AST Langium
- * - Rendu de la grammaire via un template Nunjucks
+ * Transforms a UML file in XMI format into a Langium grammar through a series of conversions:
+ * - Parsing the XML into a JSON object
+ * - Converting XMI into a UML model
+ * - Converting the UML model into a Langium AST
+ * - Rendering the grammar using a Nunjucks template
  *
- * @param {string} pathToXML - Chemin vers le fichier UML (.xmi) à convertir
- * @param {string} langiumFileLocation - Chemin de sortie où la grammaire Langium sera écrite
+ * @param {string} pathToXML - Path to the UML (.xmi) file to be converted
+ * @param {string} langiumFileLocation - Output path where the Langium grammar file will be written
  *
  * @throws
- * - Toute erreur liée au parsing XML ou à la génération de grammaire est propagée
+ * - Any error related to XML parsing or grammar generation is propagated
  *
  * @dependencies
- * - transformXmlIntoJObj : transforme le fichier XML en objet JavaScript
- * - xmi2Umlconverter : transforme un objet XMI en modèle UML
- * - U2LConverter : convertit un modèle UML en AST Langium
- * - nunjucks : moteur de template utilisé pour générer le fichier de grammaire Langium
- * - writeFileSync : écrit le fichier Langium généré dans le système de fichiers
+ * - transformXmlIntoJObj: transforms the XML file into a JavaScript object
+ * - xmi2Umlconverter: converts an XMI object into a UML model
+ * - U2LConverter: converts a UML model into a Langium AST
+ * - nunjucks: template engine used to generate the Langium grammar file
+ * - writeFileSync: writes the generated Langium file to the file system
  */
-
 export function converter(pathToXML: string, langiumFileLocation: string):void{
   const uml2langium = new U2LConverter()
 

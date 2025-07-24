@@ -6,27 +6,26 @@ import chalk from 'chalk';
 /**
  * @function generate
  * @description
- * Cette fonction analyse les arguments de ligne de commande et exécute la commande `generate`.
- * Elle attend en entrée un fichier UML au format XMI (`--input` ou `-i`) et un chemin de sortie Langium (`--output` ou `-o`).
- * Si les arguments sont valides, elle appelle la fonction `converter` pour générer un fichier Langium à partir du fichier UML fourni.
+ * This function parses command-line arguments and executes the `generate` command.
+ * It expects a UML file in XMI format as input (`--input` or `-i`) and a Langium output path (`--output` or `-o`).
+ * If the arguments are valid, it calls the `converter` function to generate a Langium file from the provided UML file.
  *
  * @usage
  * ```bash
- * uml-to-langium generate --input chemin/vers/mon.uml.xmi --output chemin/vers/ma.grammar.langium
+ * uml-to-langium generate --input path/to/my.uml.uml --output path/to/my.grammar.langium
  * ```
  *
  * @throws
- * - Affiche un message d'erreur si les arguments sont manquants ou invalides.
- * - Affiche une erreur si le fichier UML spécifié n'existe pas.
- * - Affiche toute erreur survenue pendant l'exécution de la conversion.
+ * - Displays an error message if arguments are missing or invalid.
+ * - Displays an error if the specified UML file does not exist.
+ * - Displays any error that occurs during the conversion process.
  *
  * @dependencies
- * - minimist : pour parser les arguments de la ligne de commande
- * - fs.existsSync : pour vérifier l'existence du fichier d'entrée
- * - chalk : pour afficher des messages colorés dans le terminal
- * - converter : fonction d'import qui réalise la transformation UML → Langium
+ * - minimist: parses command-line arguments
+ * - fs.existsSync: checks if the input file exists
+ * - chalk: displays colored messages in the terminal
+ * - converter: imported function that performs the UML → Langium transformation
  */
-
 export function generate():void {
   const args = minimist(process.argv.slice(2));
   const command = args._[0];

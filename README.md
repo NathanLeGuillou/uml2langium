@@ -29,7 +29,7 @@ create a ".npmrc" file on your home directory:
 `~/nano .npmrc` (in your CMD)
 
 
-in this file you will write
+in this file you will write:
 <pre>                                
 @"Your user name":registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken= "put your token here"

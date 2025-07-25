@@ -26,11 +26,20 @@ Langium est un framework pour la création de langages spécifiques au domaine (
 
 ## Installation
 
-<pre> 
-git clone https://github.com/NathanLeGuillou/uml2langium
-npm install
-  
+Créez un fichier `.npmrc` dans votre répertoire personnel :
+
+`~/nano .npmrc` (dans votre terminal)
+
+Dans ce fichier, ajoutez le contenu suivant :
+
+<pre>
+@"Votre nom d'utilisateur":registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken="mettez votre jeton ici"
 </pre>
+then in your IDE's console type:
+
+`npm install -g @nathanleguillou/uml2langium`
+
 ---
 
 ## **Utilisation / Exemples**

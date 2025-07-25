@@ -35,7 +35,9 @@ in this file you will write:
 //npm.pkg.github.com/:_authToken= "put your token here"
 
 </pre>
+then in your IDE's console type:
 
+`npm install -g @nathanleguillou/uml2langium`
 
 ---
 

@@ -36,7 +36,7 @@ Dans ce fichier, ajoutez le contenu suivant :
 @"Votre nom d'utilisateur":registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken="mettez votre jeton ici"
 </pre>
-then in your IDE's console type:
+Puis dans de la console de votre IDE écrivez:
 
 `npm install -g @nathanleguillou/uml2langium`
 

@@ -53,7 +53,7 @@ export declare function dataTypeConverter(dataTypeAst: Struct): DataType;
  * The function detects the UML type using `@_xmi:type`:
  * - "uml:Class" → via `classConverter`
  * - "uml:Association" → via `associationConverter`
- * - "uml:DataType" → via `dataTypeConverter`
+ * - "uml:DataType" → via `dataTypeConverter`const elem = propretyConverter(element, IDs, association=convertedAssociation)
  * - "uml:PrimitiveType" → via `primitiveTypeConverter`
  *
  * @param typeAst - `Struct` object representing a UML type.
@@ -62,7 +62,7 @@ export declare function dataTypeConverter(dataTypeAst: Struct): DataType;
  *
  * @throws An error if the UML type is not recognized.
  */
-export declare function typeConverter(typeAst: Struct, IDs: IdMap): Type;
+export declare function typeConverter(ast: Struct, IDs: IdMap, convertedClassesMap: Map<string, Class>): Type;
 /**
  * Converts a JSON object representing a UML property into a `Property` instance.
  *
@@ -75,7 +75,7 @@ export declare function typeConverter(typeAst: Struct, IDs: IdMap): Type;
  * @param association - (Optional) `Association` object to link this property to.
  * @returns A typed `Property` instance.
  */
-export declare function propretyConverter(propretyAst: Struct, IDs: IdMap, association?: Association): Property;
+export declare function propretyConverter(propretyAst: Struct, IDs: IdMap, convertedClassesMap: Map<string, Class>, association?: Association): Property;
 /**
  * Converts a UML class instance from a JSON AST (often extracted from an XMI model)
  * into a `Class` object conforming to the UML metamodel.
@@ -89,7 +89,7 @@ export declare function propretyConverter(propretyAst: Struct, IDs: IdMap, assoc
  *
  * @returns A properly constructed `Class` instance.
  */
-export declare function classConverter(classAst: Struct, IDs: IdMap): Class;
+export declare function classConverter(classAst: Struct, IDs: IdMap, convertedClassesMap?: Map<string, Class>): Class;
 /**
  * Converts a list of UML elements represented as JSON (typically extracted from an XMI file)
  * into a list of `Element` objects corresponding to the internal metamodel.

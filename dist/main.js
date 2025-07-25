@@ -39,5 +39,5 @@ export function converter(pathToXML, langiumFileLocation) {
     const grammarTemplate = nunjucks.render('src/grammarTemplate.njk', contexte);
     writeFileSync(langiumFileLocation, grammarTemplate);
 }
-converter('/home/nleguillou/workspace/FSM/model.uml', 'src/langFiles/langFileCli.langium');
+converter('src/tests/umlModels/roboml.xmi', 'src/langFiles/langFileCli.langium');
 //# sourceMappingURL=main.js.map

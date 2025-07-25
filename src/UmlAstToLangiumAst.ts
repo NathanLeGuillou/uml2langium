@@ -13,12 +13,13 @@ export class U2LConverter{
     public primitiveTypeArray = new Array<GrammarAST.PrimitiveType>
     public enumArray = new Array<GrammarAST.UnionType>
 
-    private  terminalMap: Record<GrammarAST.PrimitiveType , string> = { //? mettre datatype ? 
+    private  terminalMap: Record<GrammarAST.PrimitiveType , string> = {
         "string" : `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
         "boolean": 'terminal BOOLEAN: /\\b(?:true|false)\\b/;',
-        "Date": 'terminal DATE: /^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\\d{4}|\\d{2})$;',
-        "bigint": 'terminal INT: ^\\d+$;',
-        "number": 'terminal FLOAT: [-+]?[0-9]*\\.?[0-9]+;',
+        "Date" : "terminal DATE: /(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{4}|\d{2})/;",
+        "number" : "terminal FLOAT: /[-+]?\d*\.\d+|[-+]?\d+\./;",
+        "bigint" : "terminal INT: /[-+]?\d+/;"
+
     }
 
     /**
@@ -428,9 +429,9 @@ export class U2LConverter{
                 else if(value.navigableOwnedEnd.length == 1){
                     this.propretiesArray.push([value.ownedEnd[0], value.ownedEnd[1]])
                 }
-                else{
-                    throw new Error(`there can't be ${value.navigableOwnedEnd.length} navigableOwnedEnd on an association.`)
-                }
+                // else{
+                //     throw new Error(`there can't be ${value.navigableOwnedEnd.length} navigableOwnedEnd on an association.`)
+                // }
             }
             else if(isEnumeration(value)){
                 const convertedValue = this.convertEnum(value)

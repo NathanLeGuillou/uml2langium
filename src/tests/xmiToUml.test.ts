@@ -8,7 +8,7 @@ import * as umlModel from '../umlMetamodel.js'
 //   })
 // })
 
-const jObjTest = xmi2Uml.transformXmlIntoJObj('src/tests/umlModels /fsmModel.uml')
+const jObjTest = xmi2Uml.transformXmlIntoJObj('src/tests/umlModels/fsmModel.uml')
 
 const IDs = xmi2Uml.createIdMap(jObjTest) 
 
@@ -60,7 +60,7 @@ describe("typeConverter", () => {
          */
         const jObjDataType = jObjTest[3]
 
-        const result = xmi2Uml.typeConverter(jObjDataType, IDs)
+        const result = xmi2Uml.typeConverter(jObjDataType, IDs, new Map<string, umlModel.Class>())
         console.log(result)
         expect(result['name']).toBe("String")
         expect(result['$type'],`type = ${result['$type']}`).toBe("DataType")
@@ -78,7 +78,7 @@ describe("propretyConverter", () => {
          */
         const jObjProprety = jObjTest[1]['ownedAttribute'][0]
 
-        const result = xmi2Uml.propretyConverter(jObjProprety, IDs)
+        const result = xmi2Uml.propretyConverter(jObjProprety, IDs, new Map<string, umlModel.Class>())
         expect(result.name).toBe("name")
         expect(result.type.name).toBe("String")
     })

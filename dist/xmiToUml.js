@@ -146,7 +146,7 @@ export function dataTypeConverter(dataTypeAst) {
  * The function detects the UML type using `@_xmi:type`:
  * - "uml:Class" → via `classConverter`
  * - "uml:Association" → via `associationConverter`
- * - "uml:DataType" → via `dataTypeConverter`
+ * - "uml:DataType" → via `dataTypeConverter`const elem = propretyConverter(element, IDs, association=convertedAssociation)
  * - "uml:PrimitiveType" → via `primitiveTypeConverter`
  *
  * @param typeAst - `Struct` object representing a UML type.
@@ -155,22 +155,19 @@ export function dataTypeConverter(dataTypeAst) {
  *
  * @throws An error if the UML type is not recognized.
  */
-export function typeConverter(typeAst, IDs) {
-    if (typeAst['@_xmi:type'] == 'uml:Association') {
-        return associationConverter(typeAst, IDs);
+export function typeConverter(ast, IDs, convertedClassesMap) {
+    if (!ast["@_xmi:type"]) {
+        throw new Error("Missing @_xmi:type in AST.");
     }
-    else if (typeAst['@_xmi:type'] == 'uml:Class') {
-        return classConverter(typeAst, IDs);
-    }
-    else if (typeAst['@_xmi:type'] == 'uml:DataType') {
-        return dataTypeConverter(typeAst);
-    }
-    else if (typeAst['@_xmi:type'] == 'uml:PrimitiveType') {
-        return primitiveTypeConverter(typeAst);
-    }
-    else {
-        const a = 1;
-        throw new Error(`type ${typeAst['@_xmi:type']} is not recognised.`);
+    switch (ast["@_xmi:type"]) {
+        case "uml:PrimitiveType":
+            return primitiveTypeConverter(ast);
+        case "uml:Enumeration":
+            return enumConverter(ast);
+        case "uml:Class":
+            return classConverter(ast, IDs, convertedClassesMap);
+        default:
+            throw new Error(`Unsupported type: ${ast["@_xmi:type"]}`);
     }
 }
 /**
@@ -185,7 +182,7 @@ export function typeConverter(typeAst, IDs) {
  * @param association - (Optional) `Association` object to link this property to.
  * @returns A typed `Property` instance.
  */
-export function propretyConverter(propretyAst, IDs, association = {}) {
+export function propretyConverter(propretyAst, IDs, convertedClassesMap, association = {}) {
     const convertedProperty = {
         owner: {},
         ownedElement: [],
@@ -201,8 +198,17 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
         isDerived: false,
         initialValue: {},
         association: association,
-        type: typeConverter(IDs.get(propretyAst["@_type"]), IDs)
+        type: {} // typeConverter(IDs.get(propretyAst["@_type"]), IDs)
     };
+    if (propretyAst["@_type"]) {
+        convertedProperty.type = typeConverter(IDs.get(propretyAst["@_type"]), IDs, convertedClassesMap);
+    }
+    else {
+        convertedProperty.type = typeConverter({
+            "@_name": propretyAst["type"]["@_href"].split("#")[1],
+            "@_xmi:type": propretyAst["type"]["@_xmi:type"]
+        }, IDs, convertedClassesMap);
+    }
     return convertedProperty;
 }
 /**
@@ -218,7 +224,11 @@ export function propretyConverter(propretyAst, IDs, association = {}) {
  *
  * @returns A properly constructed `Class` instance.
  */
-export function classConverter(classAst, IDs) {
+export function classConverter(classAst, IDs, convertedClassesMap = new Map()) {
+    const id = classAst['@_xmi:id'];
+    if (convertedClassesMap.has(id)) {
+        return convertedClassesMap.get(id);
+    }
     const convertedClass = {
         owner: {},
         ownedElement: [],
@@ -234,20 +244,21 @@ export function classConverter(classAst, IDs) {
         $type: "Class",
         ownedAttribute: []
     };
+    convertedClassesMap.set(id, convertedClass);
     if ('ownedAttribute' in classAst) {
         const ownedAttr = Array.isArray(classAst.ownedAttribute) ? classAst.ownedAttribute : [classAst.ownedAttribute];
         for (const subMap of ownedAttr) {
-            convertedClass.attributes.push(propretyConverter(subMap, IDs));
+            convertedClass.attributes.push(propretyConverter(subMap, IDs, convertedClassesMap));
         }
     }
     if ("generalization" in classAst) {
         if (Array.isArray(classAst["generalization"])) {
             for (const gen of classAst["generalization"]) {
-                convertedClass.generalisations.push(generalisationConverter(IDs.get(gen["@_general"]), IDs));
+                convertedClass.generalisations.push(generalisationConverter(IDs.get(gen["@_general"]), IDs, convertedClassesMap));
             }
         }
         else {
-            convertedClass.generalisations.push(generalisationConverter(IDs.get(classAst["generalization"]["@_general"]), IDs));
+            convertedClass.generalisations.push(generalisationConverter(IDs.get(classAst["generalization"]["@_general"]), IDs, convertedClassesMap));
         }
     }
     return convertedClass;
@@ -298,7 +309,7 @@ function enumConverter(enumAst) {
  * @param Ids - Map for resolving the `@_general` identifier.
  * @returns The corresponding `Generalization` object.
  */
-function generalisationConverter(genAst, Ids) {
+function generalisationConverter(genAst, Ids, convertedClasses) {
     const result = {
         $type: "Generalization",
         isSubstituable: false,
@@ -310,7 +321,8 @@ function generalisationConverter(genAst, Ids) {
         target: []
     };
     if (genAst["@_xmi:type"] == "uml:Class") {
-        result.target.push(classConverter(genAst, Ids));
+        const converted = classConverter(genAst, Ids, convertedClasses);
+        result.target.push(converted);
     }
     else {
         throw new Error(`Type ${genAst["@_xmi:type"]} is not recognised.`);
@@ -347,10 +359,16 @@ function associationConverter(associationAst, IDs) {
         navigableOwnedEnd: []
     };
     if ('ownedEnd' in associationAst) {
-        associationAst.ownedEnd.forEach((element, i) => {
-            const elem = propretyConverter(element, IDs, convertedAssociation);
-            convertedAssociation.ownedEnd[i] = elem;
-        });
+        if (Array.isArray(associationAst.ownedEnd)) {
+            associationAst.ownedEnd.forEach((element, i) => {
+                const elem = propretyConverter(element, IDs, new Map(), convertedAssociation);
+                convertedAssociation.ownedEnd[i] = elem;
+            });
+        }
+        else {
+            const elem = propretyConverter(associationAst.ownedEnd, IDs, new Map(), convertedAssociation);
+            convertedAssociation.ownedEnd[0] = elem;
+        }
     }
     if ('@_navigableOwnedEnd' in associationAst) {
         let mot = "";
@@ -383,10 +401,11 @@ function associationConverter(associationAst, IDs) {
 export function xmi2Umlconverter(ast) {
     let model = [];
     const IDs = createIdMap(ast);
+    const cache = new Map();
     for (let key in ast) {
         const elem = ast[key];
         if (elem['@_xmi:type'] === 'uml:Class') {
-            model.push(classConverter(elem, IDs));
+            model.push(classConverter(elem, IDs, cache));
         }
         else if (elem['@_xmi:type'] === 'uml:DataType') {
             model.push(dataTypeConverter(elem));

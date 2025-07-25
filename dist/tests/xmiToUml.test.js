@@ -7,7 +7,7 @@ import * as umlModel from '../umlMetamodel.js';
 //     expect(valeur).toBe(ceQuOnAttend)
 //   })
 // })
-const jObjTest = xmi2Uml.transformXmlIntoJObj('src/tests/umlModels /fsmModel.uml');
+const jObjTest = xmi2Uml.transformXmlIntoJObj('src/tests/umlModels/fsmModel.uml');
 const IDs = xmi2Uml.createIdMap(jObjTest);
 describe("Fonction visibility", () => {
     it("devrait retourner package", () => {
@@ -52,7 +52,7 @@ describe("typeConverter", () => {
          *}
          */
         const jObjDataType = jObjTest[3];
-        const result = xmi2Uml.typeConverter(jObjDataType, IDs);
+        const result = xmi2Uml.typeConverter(jObjDataType, IDs, new Map());
         console.log(result);
         expect(result['name']).toBe("String");
         expect(result['$type'], `type = ${result['$type']}`).toBe("DataType");
@@ -68,7 +68,7 @@ describe("propretyConverter", () => {
          *}
          */
         const jObjProprety = jObjTest[1]['ownedAttribute'][0];
-        const result = xmi2Uml.propretyConverter(jObjProprety, IDs);
+        const result = xmi2Uml.propretyConverter(jObjProprety, IDs, new Map());
         expect(result.name).toBe("name");
         expect(result.type.name).toBe("String");
     });

@@ -171,7 +171,7 @@ export function dataTypeConverter(dataTypeAst: Struct): DataType{
  * The function detects the UML type using `@_xmi:type`:
  * - "uml:Class" → via `classConverter`
  * - "uml:Association" → via `associationConverter`
- * - "uml:DataType" → via `dataTypeConverter`
+ * - "uml:DataType" → via `dataTypeConverter`const elem = propretyConverter(element, IDs, association=convertedAssociation)
  * - "uml:PrimitiveType" → via `primitiveTypeConverter`
  *
  * @param typeAst - `Struct` object representing a UML type.
@@ -180,22 +180,24 @@ export function dataTypeConverter(dataTypeAst: Struct): DataType{
  *
  * @throws An error if the UML type is not recognized.
  */
-export function typeConverter(typeAst: Struct, IDs: IdMap): Type{
-    if(typeAst['@_xmi:type'] == 'uml:Association'){
-        return associationConverter(typeAst, IDs)
+export function typeConverter(ast: Struct, IDs: IdMap, convertedClassesMap: Map<string, Class>): Type{
+    if (!ast["@_xmi:type"]) {
+        throw new Error("Missing @_xmi:type in AST.");
     }
-    else if(typeAst['@_xmi:type'] == 'uml:Class'){
-        return classConverter(typeAst, IDs)
-    }
-    else if (typeAst['@_xmi:type'] == 'uml:DataType'){
-        return dataTypeConverter(typeAst)
-    }
-    else if (typeAst['@_xmi:type'] == 'uml:PrimitiveType'){
-        return primitiveTypeConverter(typeAst)
-    }
-    else{
-        const a = 1
-        throw new Error(`type ${typeAst['@_xmi:type']} is not recognised.`)
+
+    switch (ast["@_xmi:type"]) {
+
+        case "uml:PrimitiveType":
+            return primitiveTypeConverter(ast);
+
+        case "uml:Enumeration":
+            return enumConverter(ast);
+
+        case "uml:Class":
+            return classConverter(ast, IDs, convertedClassesMap);
+
+        default:
+            throw new Error(`Unsupported type: ${ast["@_xmi:type"]}`);
     }
 }
 
@@ -211,7 +213,7 @@ export function typeConverter(typeAst: Struct, IDs: IdMap): Type{
  * @param association - (Optional) `Association` object to link this property to.
  * @returns A typed `Property` instance.
  */
-export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: Association = {} as Association): Property {
+export function propretyConverter(propretyAst: Struct, IDs: IdMap, convertedClassesMap: Map<string, Class>, association: Association = {} as Association): Property {
     const convertedProperty: Property = {
         owner: {} as Element,
         ownedElement: [],
@@ -230,8 +232,18 @@ export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: 
         isDerived: false,
         initialValue: {} as Expression,
         association: association,
-        type: typeConverter(IDs.get(propretyAst["@_type"]), IDs)
+        type: {} as Type // typeConverter(IDs.get(propretyAst["@_type"]), IDs)
     };
+    if(propretyAst["@_type"]){
+        convertedProperty.type = typeConverter(IDs.get(propretyAst["@_type"]), IDs, convertedClassesMap)
+    }
+    else{
+        convertedProperty.type = typeConverter({
+            "@_name": propretyAst["type"]["@_href"].split("#")[1],
+            "@_xmi:type": propretyAst["type"]["@_xmi:type"]
+        } as unknown as Struct, IDs, convertedClassesMap)
+    }
+    
     return convertedProperty
 }
 
@@ -249,7 +261,11 @@ export function propretyConverter(propretyAst: Struct, IDs: IdMap, association: 
  * 
  * @returns A properly constructed `Class` instance.
  */
-export function classConverter(classAst: Struct, IDs: IdMap):Class{ //TODO optimiser la gestion des généralisations (héritage)
+export function classConverter(classAst: Struct, IDs: IdMap, convertedClassesMap = new Map<string, Class>()):Class{ //TODO optimiser la gestion des généralisations (héritage)
+    const id = classAst['@_xmi:id'];
+    if (convertedClassesMap.has(id)) {
+        return convertedClassesMap.get(id)!;
+    }
     const convertedClass: Class = {
         owner: {} as Element,
         ownedElement: [],
@@ -269,23 +285,24 @@ export function classConverter(classAst: Struct, IDs: IdMap):Class{ //TODO optim
         $type: "Class",
         ownedAttribute: []
     };
+    convertedClassesMap.set(id, convertedClass)
     if ('ownedAttribute' in classAst) {
         const ownedAttr = Array.isArray(classAst.ownedAttribute) ? classAst.ownedAttribute : [classAst.ownedAttribute]  
         for (const subMap of ownedAttr as Struct[]){
-            convertedClass.attributes.push(propretyConverter(subMap, IDs))
+            convertedClass.attributes.push(propretyConverter(subMap, IDs, convertedClassesMap))
         }
     }
     if("generalization" in classAst){
         if(Array.isArray(classAst["generalization"])){
             for (const gen of classAst["generalization"]){
                 convertedClass.generalisations.push(
-                    generalisationConverter(IDs.get(gen["@_general"]), IDs)
+                    generalisationConverter(IDs.get(gen["@_general"]), IDs, convertedClassesMap)
                 )
             }
         }
         else{
             convertedClass.generalisations.push(
-                generalisationConverter(IDs.get(classAst["generalization"]["@_general"]), IDs)
+                generalisationConverter(IDs.get(classAst["generalization"]["@_general"]), IDs, convertedClassesMap)
             )
         }
     }
@@ -341,7 +358,7 @@ function enumConverter(enumAst: Struct): Enumeration{
  * @param Ids - Map for resolving the `@_general` identifier.
  * @returns The corresponding `Generalization` object.
  */
-function generalisationConverter(genAst: Struct, Ids: IdMap): Generalization{
+function generalisationConverter(genAst: Struct, Ids: IdMap, convertedClasses: Map<string, Class>): Generalization{
     const result: Generalization = {
         $type: "Generalization",
         isSubstituable: false,
@@ -353,7 +370,8 @@ function generalisationConverter(genAst: Struct, Ids: IdMap): Generalization{
         target: []
     }
     if(genAst["@_xmi:type"] == "uml:Class"){
-        result.target.push(classConverter(genAst, Ids))
+        const converted = classConverter(genAst, Ids, convertedClasses)
+        result.target.push(converted)
     }
     else{
         throw new Error(`Type ${genAst["@_xmi:type"]} is not recognised.`)
@@ -392,10 +410,16 @@ function associationConverter(associationAst: Struct, IDs: IdMap): Association{
         navigableOwnedEnd: []
     };
     if ('ownedEnd' in associationAst) {
-        (associationAst.ownedEnd as Struct[]).forEach((element,i) => {
-            const elem = propretyConverter(element, IDs, convertedAssociation)
-            convertedAssociation.ownedEnd[i] = elem
-        });
+        if(Array.isArray(associationAst.ownedEnd)){
+            (associationAst.ownedEnd as Struct[]).forEach((element,i) => {
+                const elem = propretyConverter(element, IDs, new Map<string, Class>(), convertedAssociation)
+                convertedAssociation.ownedEnd[i] = elem
+            })
+        }
+        else{
+            const elem = propretyConverter(associationAst.ownedEnd as Struct, IDs, new Map<string, Class>(), convertedAssociation)
+                convertedAssociation.ownedEnd[0] = elem
+        }
     }
     if('@_navigableOwnedEnd' in associationAst) {
         let mot = ""
@@ -430,10 +454,12 @@ function associationConverter(associationAst: Struct, IDs: IdMap): Association{
 export function xmi2Umlconverter(ast: Struct[]):NamedElement[]{
     let model: NamedElement[] = []
     const IDs = createIdMap(ast)
+    const cache = new Map<string, Class>()
+
     for( let key in ast){
         const elem = ast[key]
         if(elem['@_xmi:type'] === 'uml:Class'){
-            model.push(classConverter(elem, IDs))
+            model.push(classConverter(elem, IDs, cache))
         }
         else if(elem['@_xmi:type'] === 'uml:DataType'){
             model.push(dataTypeConverter(elem))

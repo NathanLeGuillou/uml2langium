@@ -49,7 +49,7 @@ interface {{ iface.name }}
         {%- endfor %}
     {%- endif %} {
     {%- for attr in iface.attributes %}
-    {{ attr.name }}: {% if attr.type.$type == "ReferenceType" %}@{% endif %}{{ getTypeString(attr.type) }};
+    {{ attr.name }}{%if attr.isOptional %}?{%endif%}: {% if attr.type.$type == "ReferenceType" %}@{% endif %}{{ getTypeString(attr.type) }};
     {%- endfor %}
 }
 {% endfor %}

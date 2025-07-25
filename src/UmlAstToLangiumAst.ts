@@ -16,9 +16,9 @@ export class U2LConverter{
     private  terminalMap: Record<GrammarAST.PrimitiveType , string> = {
         "string" : `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
         "boolean": 'terminal BOOLEAN: /\\b(?:true|false)\\b/;',
-        "Date" : "terminal DATE: /(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{4}|\d{2})/;",
-        "number" : "terminal FLOAT: /[-+]?\d*\.\d+|[-+]?\d+\./;",
-        "bigint" : "terminal INT: /[-+]?\d+/;"
+        "Date" : "terminal DATE: /(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\/(\\d{4}|\\d{2})/;",
+        "number" : "terminal FLOAT: /[-+]?\\d*\\.\\d+|[-+]?\\d+\\./;",
+        "bigint" : "terminal INT: /[-+]?[0-9]+/;"
 
     }
 

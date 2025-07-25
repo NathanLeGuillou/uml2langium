@@ -190,7 +190,7 @@ export function propretyConverter(propretyAst, IDs, convertedClassesMap, associa
         visibility: visibility(propretyAst['@_visibility']),
         isOrdered: false,
         isUnique: false,
-        lower: propretyAst['lowerValue'] ? propretyAst['lowerValue']['@_value'] : 1,
+        lower: (propretyAst['lowerValue'] && propretyAst['lowerValue']["@_xmi:type"] == 'uml:LiteralInteger') ? 0 : propretyAst['lowerValue'] ? propretyAst['lowerValue']['@_value'] : 1,
         // pour upper, si il n'y a pas de limite le max es 2 car dans tous les cas on ne differencie pas les cardinalitées multiples entre elles
         upper: propretyAst['upperValue'] ? propretyAst['upperValue']['@_value'] == "*" ? 2 : propretyAst['upperValue']['@_value'] : 1,
         $type: "Property",

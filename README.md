@@ -25,15 +25,14 @@ Langium is a framework for building DSLs, offering automatic handling of both ab
 
 ## Installation
 create a ".npmrc" file on your home directory: 
-<pre>                                
-nano .npmrc
+                             
+`nano .npmrc`
 
-</pre>
+
 in this file you will write
 <pre>                                
-@nathanleguillou:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=
-  
+@"Your user name":registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken= "put your token here"
 </pre>
 
 

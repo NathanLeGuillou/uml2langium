@@ -14,7 +14,7 @@ Langium is a framework for building DSLs, offering automatic handling of both ab
 ## Features
 
 - Parsing and analysis of UML models  
-- Conversion of UML classes and interfaces into Langium interfaces  
+- Conversion of UML classes and interfaces into Langium interfaces 
 - Mapping of UML primitive types to Langium types  
 - Support for UML associations as attributes in Langium  
 - Support for UML enumerations converted to Langium types  
@@ -24,6 +24,18 @@ Langium is a framework for building DSLs, offering automatic handling of both ab
 - Error handling for files and arguments  
 
 ## Installation
+create a ".npmrc" file on your home directory: 
+<pre>                                
+nano .npmrc
+
+</pre>
+in this file you will write
+<pre>                                
+@nathanleguillou:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=
+  
+</pre>
+
 
 <pre> 
 git clone https://github.com/NathanLeGuillou/uml2langium

@@ -44,15 +44,14 @@ Puis dans de la console de votre IDE écrivez:
 
 ## **Utilisation / Exemples**
 
-<pre> 
-uml2langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
+ 
+`uml2langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"`
 
-# ou bien
+ou bien
 
-uml2langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
+`uml2langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"`
   
-</pre> 
-
+ 
 ## **Technologies utilisées**
 Liste des langages, frameworks ou bibliothèques principales:
 

@@ -26,21 +26,17 @@ Langium is a framework for building DSLs, offering automatic handling of both ab
 ## Installation
 create a ".npmrc" file on your home directory: 
                              
-`nano .npmrc`
+`~/nano .npmrc` (in your CMD)
 
 
 in this file you will write
 <pre>                                
 @"Your user name":registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken= "put your token here"
+
 </pre>
 
 
-<pre> 
-git clone https://github.com/NathanLeGuillou/uml2langium
-npm install
-  
-</pre>
 ---
 
 ### **Usages / Examples**
@@ -49,6 +45,7 @@ npm install
 uml2langium generate --input "path/to/umlFile/fileName.uml" --output "path/to/output/fileName.langium"
 
 # or with short flags:
+
 uml2langium generate -i "path/to/umlFile/fileName.uml" -o "path/to/output/fileName.langium"
   
 </pre> 

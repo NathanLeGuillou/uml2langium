@@ -37,7 +37,9 @@ npm install
 
 <pre> 
 uml2langium generate --input "cheminVersLeFichierUml/fileName.uml" --output "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
-//ou bien
+
+# ou bien
+
 uml2langium generate -i "cheminVersLeFichierUml/fileName.uml" -o "cheminVersLEndroitOuSeraStoquéLeFichierLangium/fileName.langium"
   
 </pre> 

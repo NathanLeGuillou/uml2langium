@@ -41,14 +41,13 @@ then in your IDE's console type:
 
 ### **Usages / Examples**
 
-<pre> 
-uml2langium generate --input "path/to/umlFile/fileName.uml" --output "path/to/output/fileName.langium"
 
-# or with short flags:
+`uml2langium generate --input "path/to/umlFile/fileName.uml" --output "path/to/output/fileName.langium"`
 
-uml2langium generate -i "path/to/umlFile/fileName.uml" -o "path/to/output/fileName.langium"
-  
-</pre> 
+or with short flags:
+
+`uml2langium generate -i "path/to/umlFile/fileName.uml" -o "path/to/output/fileName.langium"`
+
 
 ## Technologies Used
 

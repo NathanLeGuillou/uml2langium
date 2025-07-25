@@ -30,12 +30,9 @@ create a ".npmrc" file on your home directory:
 
 
 in this file you will write:
-
-                             
-`@"Your user name":registry=https://npm.pkg.github.com`
-`//npm.pkg.github.com/:_authToken= "put your token here"`
-
-
+<pre>@"Your user name":registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken= "put your token here"
+</pre>
 then in your IDE's console type:
 
 `npm install -g @nathanleguillou/uml2langium`

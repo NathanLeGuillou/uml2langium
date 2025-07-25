@@ -44,5 +44,3 @@ export function converter(pathToXML: string, langiumFileLocation: string):void{
 
   writeFileSync(langiumFileLocation, grammarTemplate)
 }
-
-converter('src/tests/umlModels/roboml.xmi', 'src/langFiles/langFile.langium')

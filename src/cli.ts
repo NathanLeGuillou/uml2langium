@@ -40,19 +40,19 @@ export function generate():void {
     }
 
     if (!existsSync(input)) {
-      console.error(chalk.red(`Le fichier ${input} n'existe pas.`));
+      console.error(chalk.red(`The file ${input} does not exist.`));
       process.exit(1);
     }
 
     try {
       converter(input, output);
-      console.log(chalk.green(`Fichier Langium généré avec succès dans "${output}".`));
+      console.log(chalk.green(`Langium file successfully generated in "${output}".`));
     } catch (e) {
-      console.error(chalk.red('Erreur lors de la génération :', e));
+      console.error(chalk.red('Error during generation:', e));
       process.exit(1);
     }
   } else {
-    console.error(chalk.red('Commande inconnue. Utilisez "generate"'));
+    console.error(chalk.red('Unknown command. Use "generate".'));
     process.exit(1);
   }
 }

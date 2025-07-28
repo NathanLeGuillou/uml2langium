@@ -9,11 +9,24 @@ export class U2LConverter {
     enumArray = new Array;
     terminalMap = {
         "string": `terminal STRING: /"(\\\\.|[^"\\\\])*"|'(\\\\.|[^'\\\\])*'/;`,
-        "boolean": 'terminal BOOLEAN: /\\b(?:true|false)\\b/;',
+        "boolean": 'terminal BOOLEAN returns boolean: /true|false/;',
         "Date": "terminal DATE: /(0[1-9]|[12][0-9]|3[01])\\/(0[1-9]|1[0-2])\\/(\\d{4}|\\d{2})/;",
-        "number": "terminal FLOAT: /[-+]?\\d*\\.\\d+|[-+]?\\d+\\./;",
-        "bigint": "terminal INT: /[-+]?[0-9]+/;"
+        "number": "terminal FLOAT returns number: /[-+]?\\d*\\.\\d+|[-+]?\\d+\\./;",
+        "bigint": "terminal INT returns bigint: /[-+]?[0-9]+/;"
     };
+    terminalNameMap = {
+        "string": `STRING`,
+        "boolean": 'BOOLEAN',
+        "Date": "DATE",
+        "number": "FLOAT",
+        "bigint": "INT"
+    };
+    getInterfaceFromName(interfaceName) {
+        return this.interfMap.get(interfaceName);
+    }
+    getTerminalName(primitiveType) {
+        return this.terminalNameMap[primitiveType];
+    }
     /**
      * @method getTerminal
      * Returns the Langium terminal declaration for a given primitive type.

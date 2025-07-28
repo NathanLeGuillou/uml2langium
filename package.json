@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/nathanleguillou/uml2langium.git"
   },
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/main.js",
   "scripts": {

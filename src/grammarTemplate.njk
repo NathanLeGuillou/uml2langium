@@ -1,46 +1,77 @@
-terminal ID: /[_a-zA-Z][_a-zA-Z0-9]*/;
-{% for type in primitiveTypes %}
+{#
+{%if entryRule -%}
+grammar {{grammarName}}
 
-{{- getTerminal(type) | safe}}
-{% endfor %}
 
-{#-
-{% for iface in interfaces %}
-{{ iface.name }} return {{ iface.name -}}:
-
-    {%for attr in iface.attributes %}
-        {%- if attr.type.$type == 'ArrayType' %}
+{%macro grammarInheritance(iface)-%}
+    {%for attr in iface.attributes-%}
+    {%- if attr.type.$type == 'ArrayType' -%}
     "["
         ({{attr.name}} += {{attr.type.elementType.typeRef.$refText}}
         ("," {{attr.name}} += {{attr.type.elementType.typeRef.$refText}})*)?
     "]"
-        
-        {%-elif attr.type.$type == 'TypeAttribute'-%}
-      
-    {{-attr.name}} {%if attr.isOptional%} ?= {%else%} = {%endif%} {{attr.type.name}}
 
-        {%-elif attr.type.$type == 'SimpleType'-%}
+    {%-elif attr.type.$type == 'SimpleType'-%}
+    {{attr.name}} {%-if attr.isOptional%} ?= {%-else%} = {%-endif%} {%-if attr.type.typeRef%} {{ getTypeString(attr.type) }}{%else%} {{ getTerminalName(attr.type.primitiveType)}} {%-endif%}
+    {%elif attr.type.$type == 'ReferenceType'-%}
+    {{ attr.name }} = [{{ getTypeString(attr.type) }}: ID]
+    {%-endif-%}
 
-    
-    {{attr.name}} {%if attr.isOptional%} ?= {%else%} = {%endif%} {{attr.type.typeRef.$refText}}
-        {%elif attr.type.$type == 'ReferenceType'-%}
-        
-        {%-endif-%}
+    {%-endfor%}
+{%if iface.superTypes%}
+{%for sType in iface.superTypes%}
+    {{grammarInheritance(getInterfaceFromName(sType))}}
+{%endfor%}
+{% endif %}
+{%- endmacro %}
 
-    {%endfor%}
 
+entry {{entryRule.name}}Model returns {{entryRule.name}}:
+{%for attr in entryRule.attributes-%}
+    {%- if attr.type.$type == 'ArrayType' -%}
+    "["
+        ({{attr.name}} += {{attr.type.elementType.typeRef.$refText}}
+        ("," {{attr.name}} += {{attr.type.elementType.typeRef.$refText}})*)?
+    "]"
+
+    {%-elif attr.type.$type == 'SimpleType'-%}
+    {{attr.name}} {%-if attr.isOptional%} ?= {%-else%} = {%-endif%} {%-if attr.type.typeRef%} {{ getTypeString(attr.type) }} {%else%} {{ getTerminalName(attr.type.primitiveType)}} {%-endif%}
+    {%elif attr.type.$type == 'ReferenceType'%}
+    {{ attr.name }} = [{{ getTypeString(attr.type) }}: ID]
+
+    {%-endif-%}
+
+{%-endfor-%};
+
+
+terminal ID: /[_a-zA-Z][\w_]*/;
+{%endif-%}
+#}
+{% for type in primitiveTypes %}
+
+{{- getTerminal(type) | safe}}
+{% endfor -%}
+
+{#
+
+{%if entryRule-%}
+{% for iface in interfaces %}
+{{ iface.name }} returns {{ iface.name }}:
+    {{grammarInheritance(iface)}};
 {% endfor %}
+{%-endif%}
+
 #}
 
 {%-for enum in enumerations%}
-{%if enum.types.length == 1 %}
+{%-if enum.types.length == 1 -%}
 interface {{enum.types[0].stringType}} {} //! an empty interface was generated because the corresponding enumeration was empty
 {%else%}
-type {{enum.types[0].stringType}} = {{enum.types[1].stringType | safe}} {%for type in enum.types.slice(2) -%} | {{type.stringType | safe}} {%endfor%}
+type {{enum.types[0].stringType}} = {{enum.types[1].stringType | safe}} {%for type in enum.types.slice(2) -%} | {{type.stringType | safe}} {%-endfor%};
 {%-endif%}
+{%-endfor%}
 
-{%endfor%}
-{% for iface in interfaces %}
+{%- for iface in interfaces %}
 interface {{ iface.name }}
     {%- if iface.superTypes.length > 0 %} extends {% for superT in iface.superTypes %}
             {%- if loop.first %}{{ superT.$refText }}

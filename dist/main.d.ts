@@ -20,4 +20,4 @@
  * - nunjucks: template engine used to generate the Langium grammar file
  * - writeFileSync: writes the generated Langium file to the file system
  */
-export declare function converter(pathToXML: string, langiumFileLocation: string): void;
+export declare function converter(pathToXML: string, langiumFileLocation: string, entryRuleName?: string): void;

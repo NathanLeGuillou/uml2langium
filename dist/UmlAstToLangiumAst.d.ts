@@ -9,6 +9,9 @@ export declare class U2LConverter {
     primitiveTypeArray: GrammarAST.PrimitiveType[];
     enumArray: GrammarAST.UnionType[];
     private terminalMap;
+    private terminalNameMap;
+    getInterfaceFromName(interfaceName: string): GrammarAST.Interface;
+    getTerminalName(primitiveType: GrammarAST.PrimitiveType): string;
     /**
      * @method getTerminal
      * Returns the Langium terminal declaration for a given primitive type.

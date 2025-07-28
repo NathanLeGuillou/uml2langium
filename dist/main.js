@@ -2,6 +2,7 @@ import { writeFileSync } from 'fs';
 import { U2LConverter } from './UmlAstToLangiumAst.js';
 import { transformXmlIntoJObj, xmi2Umlconverter } from './xmiToUml.js';
 import nunjucks from 'nunjucks';
+import path from 'path';
 /**
  * @function converter
  * @description
@@ -24,20 +25,27 @@ import nunjucks from 'nunjucks';
  * - nunjucks: template engine used to generate the Langium grammar file
  * - writeFileSync: writes the generated Langium file to the file system
  */
-export function converter(pathToXML, langiumFileLocation) {
+export function converter(pathToXML, langiumFileLocation, entryRuleName = "") {
     const uml2langium = new U2LConverter();
     const jObj = transformXmlIntoJObj(pathToXML);
     const umlObj = xmi2Umlconverter(jObj);
     const langObj = uml2langium.convertModel(umlObj);
+    const grammarName = path.basename(langiumFileLocation).split(".")[0];
     const contexte = {
         primitiveTypes: uml2langium.primitiveTypeArray,
         interfaces: uml2langium.interfArray,
         enumerations: uml2langium.enumArray,
         getTypeString: (type) => uml2langium.getTypeString(type),
-        getTerminal: (type) => uml2langium.getTerminal(type)
+        getTerminal: (type) => uml2langium.getTerminal(type),
+        getTerminalName: (type) => uml2langium.getTerminalName(type),
+        getInterfaceFromName: (name) => uml2langium.getInterfaceFromName(name),
+        entryRule: uml2langium.getInterfaceFromName(entryRuleName),
+        grammarName: grammarName.charAt(0).toUpperCase() + grammarName.slice(1)
     };
     const grammarTemplate = nunjucks.render('src/grammarTemplate.njk', contexte);
     writeFileSync(langiumFileLocation, grammarTemplate);
 }
-converter('src/tests/umlModels/roboml.xmi', 'src/langFiles/langFile.langium');
+const fsmModel = "/home/nleguillou/workspace/git/model-transformation-uml-langium/src/tests/umlModels/fsmModelV2.uml";
+const sourceRoboML = "/home/nleguillou/workspace/git/model-transformation-uml-langium/src/tests/umlModels/roboml.uml";
+converter(sourceRoboML, "src/langFiles/langFileCli.langium", "Program");
 //# sourceMappingURL=main.js.map

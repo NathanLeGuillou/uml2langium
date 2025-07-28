@@ -1,32 +1,19 @@
-terminal ID: /[_a-zA-Z][_a-zA-Z0-9]*/;
+
 terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
-terminal INT: /[-+]?d+/;
+terminal INT returns bigint: /[-+]?[0-9]+/;
 
-
-type Type = 'Number' | 'Boolean' 
-
-
-
-type Unit = 'cm' | 'mm' 
-
-
-
-type RotationDirection = 'Clockwise' | 'Counterclockwise' 
-
-
-
-type MovementDirection = 'Forward' | 'Backward' | 'Right' | 'Left' 
-
-
-
+type Type = 'Number' | 'Boolean';
+type Unit = 'cm' | 'mm';
+type RotationDirection = 'Clockwise' | 'Counterclockwise';
+type MovementDirection = 'Forward' | 'Backward'| 'Right'| 'Left';
 interface Program {
-    functionDef: FunctionDef[];
+    functionDef?: FunctionDef[];
 }
 
 interface FunctionDef {
-    returnType: Type;
+    returnType?: Type;
     body: Statement;
-    parameters: Parameter[];
+    parameters?: Parameter[];
     name: string;
 }
 
@@ -39,16 +26,16 @@ interface Assign extends Statement {
 }
 
 interface FunctionCall extends Statement, ExpressionTerm {
-    functionDef: @FunctionDef;
-    arguments: Expression[];
+    functionDef?: @FunctionDef;
+    arguments?: Expression[];
 }
 
 interface Expression {
 }
 
 interface VarDecl extends Statement {
-    type: Type;
-    assign: Assign;
+    type?: Type;
+    assign?: Assign;
 }
 
 interface Parameter extends VarDecl {
@@ -73,15 +60,15 @@ interface Move extends RobotInstruction {
 
 interface Conditionals extends Statement {
     condition: Expression;
-    whenTrue: Statement;
+    whenTrue?: Statement;
 }
 
 interface Block extends Statement {
-    statement: Statement[];
+    statement?: Statement[];
 }
 
 interface If extends Conditionals {
-    whenFalse: Statement;
+    whenFalse?: Statement;
 }
 
 interface Loop extends Conditionals {

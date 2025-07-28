@@ -33,7 +33,7 @@ Créez un fichier `.npmrc` dans votre répertoire personnel :
 Dans ce fichier, ajoutez le contenu suivant :
 
 <pre>
-@"Votre nom d'utilisateur":registry=https://npm.pkg.github.com
+@nathanleguillou:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken="mettez votre TOKEN ici"
 </pre>
 Puis écrivez:

@@ -33,7 +33,7 @@ in this file you will write:
 <pre>@"Your user name":registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken= "put your token here"
 </pre>
-then in your IDE's console type:
+then in your console type:
 
 `npm install -g @nathanleguillou/uml2langium`
 
